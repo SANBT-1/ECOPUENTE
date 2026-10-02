@@ -1,2 +1,0 @@
-# ECOPUENTE
-Trabajhino ecopuente
