@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1><title>EcoPuente</title></h1>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .menu {
+            background-color: #222;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 5px;
+            display: inline-block;
+            background-color: #3498db;
+            border-radius: 8px;
+        }
+
+        .menu a:hover {
+            background-color: #2ecc71;
+        }
+
+        /* CONTENIDO */
+        .contenido {
+            width: 80%;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .contenido h1 {
+            font-size: 35px;
+            color: #222;
+        }
+
+        .contenido p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* IMAGEN PRINCIPAL */
+        .imagen {
+            width: 400px;
+            max-width: 90%;
+            border-radius: 15px;
+            margin: 20px;
+        }
+
+        /* TARJETAS */
+        .tarjetas {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .tarjeta {
+            background-color: white;
+            width: 300px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px #aaa;
+        }
+
+        .tarjeta img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .tarjeta h2 {
+            color: #3498db;
+        }
+
+        .tarjeta p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MENÚ -->
+    <nav class="menu">
+        <a href="inicia sesion.html">Inicia Sesion</a>
+        <a href="informacion.html">Informacion</a>
+        <a href="Bicicletas">Bicicletas a tu alcance</a>
+        <a href="graficas.html">Datos estadisticos</a>
+        <a href="donaciones.html">donaciones</a>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <section class="contenido">
+
+        <h1>EcoPuente</h1>
+
+        <p>
+            Habitos Ecologicos al alcance de todos
+        </p>
+
+        <!-- IMAGEN PRINCIPAL -->
+        <img src="imagenes/logo empresarial.png" alt="Imagen de una planta" class="imagen">
+
+        <!-- TARJETAS -->
+        <div class="tarjetas">
+
+            <div class="tarjeta">
+                <img src="imagenes/planta.menu.png" alt="Imagen 1">
+
+                <h2>Naturaleza</h2>
+
+                <p>
+                    descubre como ayudar al medio ambiente
+                </p>
+            </div>
+
+            <div class="tarjeta">
+                <img src="imagenes/bicicleta.jpg" alt="Imagen 2">
+
+                <h2>Bicicletas</h2>
+
+                <p>
+                    Descubre los beneficios ecologicos que nos brindan las bicicletas
+                </p>
+            </div>
+
+            <div class="tarjeta">
+                <img src="imagenes/maps.jpg" alt="Imagen 3">
+
+                <h2>Mapa</h2>
+
+                <p>
+                Ubica puntos ecologicos cerca de tu ubicación
+                </p>
+            </div>
+
+        </div>
+
+    </section>
+
+</body>
+</html>
