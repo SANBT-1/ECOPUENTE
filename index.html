@@ -31,9 +31,12 @@
   .salir:hover{background:#e74c3c;border-color:#e74c3c}
 
   /* PORTADA con imagen de fondo */
-  .portada{min-height:75vh;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;padding:40px 20px;
-    background:linear-gradient(rgba(10,40,25,.55),rgba(10,40,25,.75)),var(--fondo),linear-gradient(135deg,#134e5e,#71b280);
-    background-size:cover;background-position:center top}
+  .portada{position:relative;overflow:hidden;min-height:75vh;display:flex;align-items:center;justify-content:center;gap:50px;flex-wrap:wrap;
+    text-align:center;color:#fff;padding:40px 20px 90px;background:linear-gradient(135deg,#134e5e,#71b280)}
+  .portada::before{content:"";position:absolute;inset:-30px;background:var(--fondo) center/cover;filter:blur(14px);z-index:0}
+  .portada::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(10,40,25,.55),rgba(10,40,25,.8));z-index:0}
+  .portada>div,.portada>.miku{position:relative;z-index:1}
+  .miku{width:260px;max-width:80%;border-radius:20px;border:4px solid rgba(255,255,255,.85);box-shadow:0 10px 35px rgba(0,0,0,.6)}
   .portada h1{font-size:clamp(40px,8vw,72px);margin:10px 0;text-shadow:0 4px 15px #000}
   .portada p{font-size:22px;text-shadow:0 2px 8px #000}
   .portada .imagen{width:180px;border-radius:50%;box-shadow:0 0 25px rgba(46,204,113,.8)}
@@ -76,6 +79,7 @@
     <p>Hábitos ecológicos al alcance de todos</p>
     <div id="saludo"></div>
   </div>
+  <img class="miku" src="imagenes/miku.jpg" alt="Miku Nakano">
 </header>
 
 <section class="contenido">
