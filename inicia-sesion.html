@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Iniciar sesión</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#0f2027,#2c5364 50%,#2ecc71);padding:20px}
+  .caja{background:rgba(255,255,255,.95);width:380px;max-width:100%;padding:32px;border-radius:20px;box-shadow:0 15px 40px rgba(0,0,0,.35)}
+  .caja img{display:block;width:90px;margin:0 auto 10px;border-radius:50%}
+  h1{text-align:center;margin:0 0 5px;color:#222}
+  .sub{text-align:center;color:#666;margin:0 0 20px}
+  .tabs{display:flex;margin-bottom:18px;background:#eee;border-radius:10px;padding:4px}
+  .tabs button{flex:1;border:0;padding:10px;border-radius:8px;background:none;cursor:pointer;font-weight:bold;color:#555}
+  .tabs button.on{background:#3498db;color:#fff}
+  input,select{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:15px}
+  .btn{width:100%;padding:12px;margin-top:10px;border:0;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;color:#fff;background:#2ecc71}
+  .btn:hover{background:#27ae60}
+  .google{background:#fff;color:#333;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;gap:10px}
+  .google:hover{background:#f5f5f5}
+  .o{text-align:center;color:#999;margin:14px 0 4px;font-size:13px}
+  #msg{text-align:center;color:#e74c3c;min-height:20px;margin-top:10px;font-size:14px}
+  .volver{display:block;text-align:center;margin-top:14px;color:#3498db;text-decoration:none}
+  #nombre{display:none}
+</style>
+</head>
+<body>
+<div class="caja">
+  <img src="imagenes/logo empresarial.png" alt="EcoPuente">
+  <h1>EcoPuente</h1>
+  <p class="sub">Entra o crea tu cuenta</p>
+
+  <div class="tabs">
+    <button id="tIn" class="on" type="button">Iniciar sesión</button>
+    <button id="tReg" type="button">Registrarme</button>
+  </div>
+
+  <select id="rol">
+    <option value="usuario">Entrar como usuario</option>
+    <option value="administrador">Entrar como administrador</option>
+  </select>
+  <input id="codigoAdmin" type="password" placeholder="Código de administrador" style="display:none">
+  <small style="display:block;color:#888;margin:2px 0 8px">El rol se elige solo la primera vez que creas tu cuenta.</small>
+
+  <button class="btn google" id="bGoogle" type="button">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+    Continuar con Google
+  </button>
+  <div class="o">— o con tu correo —</div>
+
+  <input id="nombre" type="text" placeholder="Tu nombre">
+  <input id="correo" type="email" placeholder="Correo electrónico">
+  <input id="clave" type="password" placeholder="Contraseña (mínimo 6 caracteres)">
+  <button class="btn" id="bEnviar" type="button">Entrar</button>
+  <div id="msg"></div>
+  <a class="volver" href="index.html">← Volver al inicio</a>
+</div>
+
+<script type="module">
+import { entrarConGoogle, entrarConCorreo, registrarConCorreo, obtenerRol, onAuthStateChanged, auth } from "./auth.js";
+
+let modoRegistro = false;
+const $ = id => document.getElementById(id);
+const msg = t => $("msg").textContent = t;
+
+function modo(reg){
+  modoRegistro = reg;
+  $("tIn").classList.toggle("on", !reg); $("tReg").classList.toggle("on", reg);
+  $("nombre").style.display = reg ? "block" : "none";
+  $("bEnviar").textContent = reg ? "Crear cuenta" : "Entrar";
+  msg("");
+}
+$("tIn").onclick = () => modo(false);
+$("tReg").onclick = () => modo(true);
+
+const errores = {
+  "auth/invalid-credential":"Correo o contraseña incorrectos.",
+  "auth/email-already-in-use":"Ese correo ya está registrado.",
+  "auth/weak-password":"La contraseña es muy corta.",
+  "auth/invalid-email":"Correo no válido.",
+  "auth/popup-closed-by-user":"Cerraste la ventana de Google."
+};
+$("rol").onchange = () => {
+  $("codigoAdmin").style.display = $("rol").value === "administrador" ? "block" : "none";
+};
+async function intentar(fn){
+  sessionStorage.setItem("rolElegido", $("rol").value);
+  sessionStorage.setItem("codigoAdmin", $("codigoAdmin").value);
+  sessionStorage.removeItem("codigoMalo");
+  try{ msg("Procesando..."); await fn(); }
+  catch(e){ msg(errores[e.code] || "Error: " + e.code); }
+}
+
+$("bGoogle").onclick = () => intentar(entrarConGoogle);
+$("bEnviar").onclick = () => intentar(() => modoRegistro
+  ? registrarConCorreo($("nombre").value.trim() || "Usuario", $("correo").value, $("clave").value)
+  : entrarConCorreo($("correo").value, $("clave").value));
+
+// Al haber sesión: asigna/lee el rol y vuelve al inicio
+onAuthStateChanged(auth, async user => {
+  if(user){
+    await obtenerRol(user);
+    if(sessionStorage.getItem("codigoMalo")){
+      sessionStorage.removeItem("codigoMalo");
+      msg("Código de administrador incorrecto: tu cuenta se creó como usuario.");
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    location.href = "index.html";
+  }
+});
+window.__authOk = true;
+</script>
+<script>
+// Si auth.js no carga, los botones no hacen nada; aquí se avisa el motivo
+setTimeout(function(){
+  if (window.__authOk) return;
+  var m = document.getElementById("msg");
+  m.style.fontWeight = "bold";
+  m.textContent = location.protocol === "file:"
+    ? "Abriste el archivo con doble clic. Ábrelo con Live Server (http://localhost...)."
+    : "No se pudo cargar auth.js. Revisa que se llame exactamente auth.js y esté en la misma carpeta.";
+}, 2500);
+</script>
+</body>
+</html>
