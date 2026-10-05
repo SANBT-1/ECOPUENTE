@@ -60,13 +60,12 @@
   }
 </style>
 </head>
-<body>
+<body class="oculta">
 
 <aside class="sidebar" id="sidebar">
   <div class="marca">🌱 EcoPuente</div>
   <nav>
     <a class="activo" href="index.html">Inicio</a>
-    <a href="mapa.html">Mapa ecológico</a>
     <a href="informacion1.html">Información</a>
     <a href="Bicicletas">Bicicletas a tu alcance</a>
     <a href="graficas.html">Datos estadísticos</a>
@@ -147,7 +146,6 @@ onAuthStateChanged(auth, async user => {
   $("linkAdmin").style.display = rol === "administrador" ? "block" : "none";
 });
 $("salir").onclick = () => cerrarSesion();
-if (innerWidth <= 800) document.body.classList.add("oculta"); // en celular empieza oculta
 $("menuBtn").onclick = () => document.body.classList.toggle("oculta");
 </script>
 </body>
