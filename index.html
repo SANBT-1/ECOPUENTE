@@ -29,12 +29,14 @@
   .invitado{padding:12px;margin-top:10px;border-top:1px solid #34463b;color:#9fb3a7;font-size:14px}
 
   /* CONTENIDO */
-  .principal{margin-left:250px}
+  .principal{margin-left:250px;transition:margin .25s}
+  body.oculta .sidebar{transform:translateX(-100%)}
+  body.oculta .principal{margin-left:0}
   .topbar{display:flex;align-items:center;justify-content:flex-end;padding:14px 22px;min-height:66px}
   .btn-sesion{color:#fff;text-decoration:none;font-weight:bold;padding:10px 24px;border-radius:30px;
     background:linear-gradient(45deg,#ff9800,#ff5722);box-shadow:0 0 14px rgba(255,152,0,.6);transition:.2s}
   .btn-sesion:hover{transform:scale(1.07)}
-  #menuBtn{display:none;margin-right:auto;background:#1e2a24;color:#fff;border:0;border-radius:8px;padding:9px 13px;font-size:18px;cursor:pointer}
+  #menuBtn{display:block;margin-right:auto;background:#1e2a24;color:#fff;border:0;border-radius:8px;padding:9px 13px;font-size:18px;cursor:pointer}
 
   .portada{display:flex;align-items:center;justify-content:center;gap:50px;flex-wrap:wrap;text-align:center;padding:20px 20px 90px}
   .portada h1{font-size:clamp(36px,6vw,64px);margin:10px 0;color:#1b4d3a}
@@ -51,12 +53,10 @@
   .tarjeta h2{color:#27ae60}
   footer{text-align:center;padding:20px;color:#555}
 
-  /* CELULAR: la barra se esconde y se abre con ☰ */
+  /* CELULAR: la barra se pone encima del contenido */
   @media(max-width:800px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.abierta{transform:none;box-shadow:0 0 30px rgba(0,0,0,.5)}
     .principal{margin-left:0}
-    #menuBtn{display:block}
+    .sidebar{box-shadow:0 0 30px rgba(0,0,0,.5)}
   }
 </style>
 </head>
@@ -94,7 +94,6 @@
       <p>Hábitos ecológicos al alcance de todos</p>
       <div id="saludo"></div>
     </div>
-    <img class="destacada" src="imagenes/asta.jpg" alt="Imagen de portada">
   </header>
 
   <section class="contenido">
@@ -147,7 +146,8 @@ onAuthStateChanged(auth, async user => {
   $("linkAdmin").style.display = rol === "administrador" ? "block" : "none";
 });
 $("salir").onclick = () => cerrarSesion();
-$("menuBtn").onclick = () => $("sidebar").classList.toggle("abierta");
+if (innerWidth <= 800) document.body.classList.add("oculta"); // en celular empieza oculta
+$("menuBtn").onclick = () => document.body.classList.toggle("oculta");
 </script>
 </body>
 </html>
