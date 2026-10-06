@@ -286,4 +286,66 @@
         <div class="quick-amounts">
           <button type="button" class="quick-btn" onclick="setAmount(20000)">$20.000</button>
           <button type="button" class="quick-btn" onclick="setAmount(50000)">$50.000</button>
-          <button type="button"
+          <button type="button" class="quick-btn" onclick="setAmount(100000)">$100.000</button>
+        </div>
+        <input type="number" id="monto" min="5000" step="1000" required placeholder="Ingresa un valor (mínimo $5.000 COP)">
+      </div>
+
+      <!-- 4. Método de Pago -->
+      <div class="form-group">
+        <label>Método de Pago *</label>
+        <select id="metodoPago" required>
+          <option value="" disabled selected>Selecciona un método de pago</option>
+          <option value="PSE">PSE (Débito bancario Colombia)</option>
+          <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
+          <option value="Nequi">Nequi / Daviplata</option>
+          <option value="Efectivo">Efecty / Baloto (Efectivo)</option>
+        </select>
+      </div>
+
+      <!-- Botones principales -->
+      <div class="button-group">
+        <a href="index.html" class="btn-secondary">Volver al Menú</a>
+        <button type="submit" class="btn-submit">Continuar al Pago Directo ➔</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Resaltar la tarjeta seleccionada
+    function selectCause(element) {
+      document.querySelectorAll('.cause-card').forEach(card => card.classList.remove('selected'));
+      element.classList.add('selected');
+      const radio = element.querySelector('input[type="radio"]');
+      radio.checked = true;
+    }
+
+    // Botones de monto rápido
+    function setAmount(value) {
+      document.getElementById('monto').value = value;
+    }
+
+    // Procesamiento del Formulario
+    document.getElementById('donationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nombre = document.getElementById('nombre').value;
+      const email = document.getElementById('email').value;
+      const monto = parseInt(document.getElementById('monto').value).toLocaleString('es-CO');
+      const metodo = document.getElementById('metodoPago').value;
+      
+      const causaSeleccionada = document.querySelector('input[name="causa"]:checked');
+      const orgNombre = causaSeleccionada.getAttribute('data-org');
+      const orgUrl = causaSeleccionada.getAttribute('data-url');
+
+      // Confirmación
+      const mensaje = `¡Gracias ${nombre}!\n\nSerás redirigido para completar tu donación de $${monto} COP a través de ${metodo} directamente hacia "${orgNombre}".`;
+      
+      alert(mensaje);
+
+      // Redirección directa a la organización seleccionada
+      window.location.href = orgUrl;
+    });
+  </script>
+</body>
+</html>
