@@ -30,6 +30,24 @@
       padding: 35px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    /* Botón Superior para Volver */
+    .btn-back-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: #4a5568;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 15px;
+      transition: color 0.2s;
+    }
+
+    .btn-back-header:hover {
+      color: #2e7d32;
     }
 
     h1 {
@@ -155,8 +173,15 @@
       background: #edf2f7;
     }
 
+    /* Botones de acción */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
     .btn-submit {
-      width: 100%;
+      flex: 2;
       background-color: #2e7d32;
       color: white;
       padding: 14px;
@@ -165,7 +190,6 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 15px;
       transition: background-color 0.2s;
     }
 
@@ -173,9 +197,29 @@
       background-color: #1b5e20;
     }
 
+    .btn-secondary {
+      flex: 1;
+      background-color: #e2e8f0;
+      color: #4a5568;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: #cbd5e0;
+    }
+
     @media (max-width: 500px) {
-      .grid-2 {
+      .grid-2, .button-group {
         grid-template-columns: 1fr;
+        flex-direction: column-reverse;
       }
     }
   </style>
@@ -183,6 +227,9 @@
 <body>
 
   <div class="container">
+    <!-- Enlace superior para regresar al menú principal -->
+    <a href="index.html" class="btn-back-header">← Volver al Menú Principal</a>
+
     <h1>Siembra Futuro Colombia</h1>
     <p class="subtitle">Apoya causas locales por el agua, los árboles y la movilidad sostenible</p>
 
@@ -239,62 +286,4 @@
         <div class="quick-amounts">
           <button type="button" class="quick-btn" onclick="setAmount(20000)">$20.000</button>
           <button type="button" class="quick-btn" onclick="setAmount(50000)">$50.000</button>
-          <button type="button" class="quick-btn" onclick="setAmount(100000)">$100.000</button>
-        </div>
-        <input type="number" id="monto" min="5000" step="1000" required placeholder="Ingresa un valor (mínimo $5.000 COP)">
-      </div>
-
-      <!-- 4. Método de Pago -->
-      <div class="form-group">
-        <label>Método de Pago *</label>
-        <select id="metodoPago" required>
-          <option value="" disabled selected>Selecciona un método de pago</option>
-          <option value="PSE">PSE (Débito bancario Colombia)</option>
-          <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
-          <option value="Nequi">Nequi / Daviplata</option>
-          <option value="Efectivo">Efecty / Baloto (Efectivo)</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn-submit">Continuar al Pago Directo ➔</button>
-    </form>
-  </div>
-
-  <script>
-    // Resaltar la tarjeta seleccionada
-    function selectCause(element) {
-      document.querySelectorAll('.cause-card').forEach(card => card.classList.remove('selected'));
-      element.classList.add('selected');
-      const radio = element.querySelector('input[type="radio"]');
-      radio.checked = true;
-    }
-
-    // Botones de monto rápido
-    function setAmount(value) {
-      document.getElementById('monto').value = value;
-    }
-
-    // Procesamiento del Formulario
-    document.getElementById('donationForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const nombre = document.getElementById('nombre').value;
-      const email = document.getElementById('email').value;
-      const monto = parseInt(document.getElementById('monto').value).toLocaleString('es-CO');
-      const metodo = document.getElementById('metodoPago').value;
-      
-      const causaSeleccionada = document.querySelector('input[name="causa"]:checked');
-      const orgNombre = causaSeleccionada.getAttribute('data-org');
-      const orgUrl = causaSeleccionada.getAttribute('data-url');
-
-      // Confirmación
-      const mensaje = `¡Gracias ${nombre}!\n\nSerás redirigido para completar tu donación de $${monto} COP a través de ${metodo} directamente hacia "${orgNombre}".`;
-      
-      alert(mensaje);
-
-      // Redirección directa a la organización seleccionada
-      window.location.href = orgUrl;
-    });
-  </script>
-</body>
-</html>
+          <button type="button"
