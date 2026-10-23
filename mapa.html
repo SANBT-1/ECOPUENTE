@@ -7,57 +7,48 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,sans-serif;color:#222}
-  .top{position:fixed;top:0;left:0;right:0;height:56px;z-index:2000;display:flex;align-items:center;gap:8px;padding:0 14px;background:#1e2a24;color:#fff}
-  .top h1{font-size:18px;color:#2ecc71;margin:0 auto 0 6px;white-space:nowrap}
-  .top a,.top button,.btn{border:0;border-radius:8px;padding:9px 14px;color:#fff;font-weight:bold;cursor:pointer;text-decoration:none;font-size:14px;background:#3498db}
-  .top .sug{background:#27ae60}
-  .top #btnSug{background:#8e44ad;display:none}
-  .top #linkLogin{background:linear-gradient(45deg,#ff9800,#ff5722)}
-  #map{position:absolute;top:56px;left:0;right:0;bottom:0}
-
-  .mp-panel{position:absolute;top:68px;left:12px;z-index:1000;width:min(440px,calc(100% - 24px))}
-  .mp-buscar{display:flex;gap:6px;background:#fff;border-radius:28px;padding:6px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
-  .mp-buscar input{flex:1;min-width:0;border:0;outline:0;padding:8px 12px;font-size:15px;background:none}
-  .mp-buscar button,.mp-zona{border:0;border-radius:20px;padding:8px 14px;font-weight:bold;cursor:pointer;color:#fff;background:#27ae60}
-  .mp-buscar #mpLoc{background:#3498db}
-  .mp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .mp-chip{border:0;border-radius:20px;padding:7px 13px;font-size:13px;cursor:pointer;background:#fff;color:#222;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;gap:6px}
-  .mp-chip i{width:11px;height:11px;border-radius:50%;display:inline-block}
-  .mp-chip.off{opacity:.55;text-decoration:line-through}
-  .mp-zona{position:absolute;top:68px;left:50%;transform:translateX(-50%);z-index:1000;display:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
-  .mp-estado{position:absolute;left:12px;bottom:12px;z-index:1000;background:rgba(255,255,255,.95);padding:6px 12px;border-radius:14px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:70%}
-  @media(max-width:800px){.mp-zona{top:auto;bottom:52px}}
-
-  .mp-del{margin-top:6px;background:#e74c3c;color:#fff;border:0;border-radius:6px;padding:6px 10px;cursor:pointer}
-
-  /* ventana de sugerir */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:15px}
-  .modal.on{display:flex}
-  .modal-c{background:#fff;border-radius:16px;padding:24px;width:430px;max-width:100%;max-height:92vh;overflow:auto}
-  .modal-c h2{margin:0 0 12px;color:#1b4d3a}
-  .modal-c label{display:block;font-weight:bold;font-size:14px;margin-top:10px}
-  .modal-c input,.modal-c textarea{width:100%;padding:10px;margin-top:4px;border:1px solid #ccc;border-radius:10px;font-size:15px;font-family:inherit}
-  .acc{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-  .btn.gris{background:#999}
-  .btn.verde{background:#27ae60}
-  #fMsg{margin-top:10px;font-size:14px;min-height:18px;color:#c0392b}
-  #fMsg.ok{color:#27ae60}
-
-  /* panel de administradores */
-  #drawer{position:fixed;top:56px;right:0;bottom:0;width:380px;max-width:100%;background:#fff;z-index:2500;box-shadow:-4px 0 18px rgba(0,0,0,.3);transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
-  #drawer.on{transform:none}
-  #drawer header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#8e44ad;color:#fff}
-  #drawer header b{font-size:16px}
-  #drawer header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
-  #lista{overflow:auto;padding:12px}
-  .sug-card{border:1px solid #e3e3e3;border-radius:12px;padding:12px;margin-bottom:12px}
-  .sug-card h3{margin:0 0 6px;font-size:16px}
-  .sug-card p{margin:4px 0;font-size:14px}
-  .sug-card small{color:#777}
-
-  #barra{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:2600;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 4px 18px rgba(0,0,0,.4);display:none;align-items:center;gap:12px;flex-wrap:wrap;max-width:95%}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:Arial,sans-serif;color:#222}
+.top{position:fixed;inset:0 0 auto 0;height:56px;z-index:2000;display:flex;align-items:center;gap:8px;padding:0 14px;background:#1e2a24}
+.top h1{font-size:18px;color:#2ecc71;margin:0 auto 0 6px;white-space:nowrap}
+.top a,.top button,.btn,.mp-buscar button,.mp-zona{border:0;border-radius:8px;padding:9px 14px;color:#fff;font-weight:bold;cursor:pointer;text-decoration:none;font-size:14px;background:#3498db}
+.top .sug,.btn.verde,.mp-buscar #mpGo,.mp-zona{background:#27ae60}
+.top #btnSug{background:#8e44ad}
+.top #linkLogin{background:linear-gradient(45deg,#ff9800,#ff5722)}
+.btn.gris{background:#999}
+#map{position:absolute;inset:56px 0 0 0}
+.mp-panel{position:absolute;top:68px;left:12px;z-index:1000;width:min(440px,calc(100% - 24px))}
+.mp-buscar{display:flex;gap:6px;background:#fff;border-radius:28px;padding:6px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.mp-buscar input{flex:1;min-width:0;border:0;outline:0;padding:8px 12px;font-size:15px}
+.mp-buscar button,.mp-zona{border-radius:20px;padding:8px 14px}
+.mp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mp-chip{border:0;border-radius:20px;padding:7px 13px;font-size:13px;cursor:pointer;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;gap:6px}
+.mp-chip i{width:11px;height:11px;border-radius:50%}
+.mp-chip.off{opacity:.55;text-decoration:line-through}
+.mp-zona{position:absolute;top:68px;left:50%;transform:translateX(-50%);z-index:1000;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.mp-estado{position:absolute;left:12px;bottom:12px;z-index:1000;background:rgba(255,255,255,.95);padding:6px 12px;border-radius:14px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.25);max-width:70%}
+.mp-del{margin-top:6px;background:#e74c3c;color:#fff;border:0;border-radius:6px;padding:6px 10px;cursor:pointer}
+@media(max-width:800px){.mp-zona{top:auto;bottom:52px}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:15px}
+.modal.on{display:flex}
+.modal-c{background:#fff;border-radius:16px;padding:24px;width:430px;max-width:100%;max-height:92vh;overflow:auto}
+.modal-c h2{margin:0 0 12px;color:#1b4d3a}
+.modal-c label{display:block;font-weight:bold;font-size:14px;margin-top:10px}
+.modal-c input,.modal-c textarea{width:100%;padding:10px;margin-top:4px;border:1px solid #ccc;border-radius:10px;font:15px inherit}
+.acc{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+#fMsg{margin-top:10px;font-size:14px;min-height:18px;color:#c0392b}
+#fMsg.ok{color:#27ae60}
+#drawer{position:fixed;top:56px;right:0;bottom:0;width:380px;max-width:100%;background:#fff;z-index:2500;box-shadow:-4px 0 18px rgba(0,0,0,.3);transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+#drawer.on{transform:none}
+#drawer header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#8e44ad;color:#fff}
+#drawer header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
+#lista{overflow:auto;padding:12px}
+.sug-card{border:1px solid #e3e3e3;border-radius:12px;padding:12px;margin-bottom:12px}
+.sug-card h3{margin:0 0 6px;font-size:16px}
+.sug-card p{margin:4px 0;font-size:14px}
+.sug-card small{color:#777}
+#barra{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:2600;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 4px 18px rgba(0,0,0,.4);display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:95%}
 </style>
 </head>
 <body>
@@ -66,7 +57,7 @@
   <a href="index.html">← Inicio</a>
   <h1>Mapa ecológico</h1>
   <button class="sug" id="btnSugerir" type="button">Sugerir un lugar</button>
-  <button id="btnSug" type="button">Sugerencias (0)</button>
+  <button id="btnSug" type="button" hidden>Sugerencias (0)</button>
   <a id="linkLogin" href="inicia-sesion.html">Iniciar sesión</a>
 </div>
 
@@ -74,16 +65,15 @@
 
 <div class="mp-panel">
   <div class="mp-buscar">
-    <input id="mpQ" type="text" placeholder="Buscar una ciudad o dirección...">
+    <input id="mpQ" type="text" placeholder="Buscar una ciudad o dirección..." aria-label="Buscar">
     <button id="mpGo" type="button">Buscar</button>
     <button id="mpLoc" type="button">Cerca de mí</button>
   </div>
   <div class="mp-chips" id="mpChips"></div>
 </div>
-<button id="mpZona" class="mp-zona" type="button">Buscar en esta zona</button>
+<button id="mpZona" class="mp-zona" type="button" hidden>Buscar en esta zona</button>
 <div id="mpEstado" class="mp-estado">Cargando mapa...</div>
 
-<!-- Ventana: sugerir un lugar -->
 <div class="modal" id="modal">
   <div class="modal-c">
     <h2>Sugerir un lugar ecológico</h2>
@@ -97,7 +87,7 @@
         <button class="btn verde" id="fEnviar" type="button">Enviar sugerencia</button>
       </div>
     </div>
-    <div id="loginBox" style="display:none">
+    <div id="loginBox" hidden>
       <p>Para sugerir un lugar tienes que iniciar sesión.</p>
       <div class="acc">
         <button class="btn gris" id="lCerrar" type="button">Cerrar</button>
@@ -107,14 +97,12 @@
   </div>
 </div>
 
-<!-- Panel de administradores -->
 <aside id="drawer">
-  <header><b>Sugerencias pendientes</b><button id="dCerrar" type="button">×</button></header>
+  <header><b>Sugerencias pendientes</b><button id="dCerrar" type="button" aria-label="Cerrar">×</button></header>
   <div id="lista"></div>
 </aside>
 
-<!-- Barra al colocar un lugar (administradores) -->
-<div id="barra">
+<div id="barra" hidden>
   <span id="barraTxt"></span>
   <button class="btn verde" id="bPublicar" type="button">Publicar en el mapa</button>
   <button class="btn gris" id="bCancelar" type="button">Cancelar</button>
@@ -126,32 +114,32 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, s
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
 const estado = t => $("mpEstado").textContent = t;
+const ruta = (lat, lon) => `<a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">Cómo llegar</a>`;
 
 const CATS = {
   reciclaje:  { n: "Reciclaje",           c: "#27ae60", osm: t => t.amenity === "recycling" },
   bicicletas: { n: "Bicicletas públicas", c: "#3498db", osm: t => t.amenity === "bicycle_rental" },
   carga:      { n: "Carga eléctrica",     c: "#f39c12", osm: t => t.amenity === "charging_station" },
   parques:    { n: "Parques",             c: "#795548", osm: t => t.leisure === "park" },
-  lugares:    { n: "Lugares EcoPuente",   c: "#e91e63" }   // los publican los administradores
+  lugares:    { n: "Lugares EcoPuente",   c: "#e91e63" }
 };
+const KEYS = Object.keys(CATS), OSM_KEYS = KEYS.filter(k => CATS[k].osm);
 const MAT = { glass: "vidrio", glass_bottles: "botellas de vidrio", paper: "papel", cardboard: "cartón", plastic: "plástico",
   plastic_bottles: "botellas plásticas", cans: "latas", batteries: "pilas", clothes: "ropa", scrap_metal: "metal", electrical_items: "electrónicos" };
 const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
 
-let user = null, esAdmin = false, auto = false, usuarioPin = null;
-let grupos = {}, conteo = {}, lugares = [], pendientes = [], pend = null, marcador = null;
+let user, esAdmin = false, auto = false, usuarioPin, pedido = 0, lugares = [], pendientes = [], pend, marcador;
+const grupos = {}, conteo = {};
 
-/* ---------- Mapa base ---------- */
-const map = L.map("map", { zoomControl: false }).setView([6.2442, -75.5812], 13);
+const map = L.map("map", { zoomControl: false, preferCanvas: true }).setView([6.2442, -75.5812], 13);
 L.control.zoom({ position: "bottomright" }).addTo(map);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-/* ---------- Botones de categoría ---------- */
-Object.keys(CATS).forEach(k => {
+KEYS.forEach(k => {
   grupos[k] = L.layerGroup().addTo(map); conteo[k] = 0;
   const b = document.createElement("button");
   b.className = "mp-chip"; b.type = "button"; b.id = "chip-" + k;
@@ -160,17 +148,14 @@ Object.keys(CATS).forEach(k => {
     on ? map.removeLayer(grupos[k]) : map.addLayer(grupos[k]);
     b.classList.toggle("off", on);
   };
-  $("mpChips").appendChild(b);
+  $("mpChips").append(b);
 });
-function chips() {
-  Object.keys(CATS).forEach(k => $("chip-" + k).innerHTML = `<i style="background:${CATS[k].c}"></i>${CATS[k].n} (${conteo[k]})`);
-}
+const chips = () => KEYS.forEach(k => $("chip-" + k).innerHTML = `<i style="background:${CATS[k].c}"></i>${CATS[k].n} (${conteo[k]})`);
 chips();
 
-/* ---------- Puntos de OpenStreetMap ---------- */
 function detalle(k, t) {
   if (k === "reciclaje") {
-    const m = Object.keys(t).filter(x => x.startsWith("recycling:") && t[x] === "yes").map(x => { const q = x.slice(10); return MAT[q] || q.replace(/_/g, " "); });
+    const m = Object.keys(t).filter(x => x.startsWith("recycling:") && t[x] === "yes").map(x => MAT[x.slice(10)] || x.slice(10).replace(/_/g, " "));
     return m.length ? "Acepta: " + m.join(", ") : "";
   }
   const p = [];
@@ -178,15 +163,13 @@ function detalle(k, t) {
   if (t.capacity) p.push("Capacidad: " + t.capacity);
   return p.join(" · ");
 }
-const ruta = (lat, lon) => `<a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">Cómo llegar</a>`;
 
 function pintarOSM(els) {
-  Object.keys(CATS).filter(k => CATS[k].osm).forEach(k => { grupos[k].clearLayers(); conteo[k] = 0; });
+  OSM_KEYS.forEach(k => { grupos[k].clearLayers(); conteo[k] = 0; });
   els.forEach(e => {
     const t = e.tags || {}, lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
-    if (lat == null || lon == null) return;
-    const k = Object.keys(CATS).find(x => CATS[x].osm && CATS[x].osm(t));
-    if (!k) return;
+    const k = OSM_KEYS.find(x => CATS[x].osm(t));
+    if (!k || lat == null || lon == null) return;
     conteo[k]++;
     const d = detalle(k, t);
     L.circleMarker([lat, lon], { radius: 8, color: "#fff", weight: 2, fillColor: CATS[k].c, fillOpacity: .95 })
@@ -194,32 +177,35 @@ function pintarOSM(els) {
       .addTo(grupos[k]);
   });
   chips();
-  const total = Object.keys(conteo).reduce((s, k) => s + conteo[k], 0);
+  const total = KEYS.reduce((s, k) => s + conteo[k], 0);
   estado(total ? `${total} puntos en esta zona` : "No hay puntos registrados en esta zona. Prueba otra área.");
 }
 
 async function overpass(q) {
-  for (const u of ENDPOINTS) {
-    try {
-      const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) });
-      if (r.ok) return await r.json();
-    } catch (e) {}
-  }
-  throw new Error("sin respuesta");
+  for (const u of ENDPOINTS) try {
+    const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) });
+    if (r.ok) return await r.json();
+  } catch {}
+  throw 0;
 }
 
 async function cargar() {
-  if (map.getZoom() < 12) { estado("Acerca el mapa para ver los puntos."); return; }
+  if (map.getZoom() < 12) return estado("Acerca el mapa para ver los puntos.");
   const b = map.getBounds(), bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(",");
-  const q = `[out:json][timeout:25];(nwr["amenity"="recycling"](${bb});nwr["amenity"="bicycle_rental"](${bb});nwr["amenity"="charging_station"](${bb});nwr["leisure"="park"]["name"](${bb}););out center 400;`;
-  $("mpZona").style.display = "none"; estado("Buscando puntos ecológicos...");
-  try { pintarOSM((await overpass(q)).elements); }
-  catch (e) { estado("No se pudo cargar. Intenta de nuevo en unos segundos."); $("mpZona").style.display = "block"; }
+  const q = `[out:json][timeout:25];(nwr["amenity"~"^(recycling|bicycle_rental|charging_station)$"](${bb});nwr["leisure"="park"]["name"](${bb}););out center 400;`;
+  const id = ++pedido;
+  $("mpZona").hidden = true; estado("Buscando puntos ecológicos...");
+  try {
+    const r = await overpass(q);
+    if (id === pedido) pintarOSM(r.elements);
+  } catch {
+    if (id !== pedido) return;
+    estado("No se pudo cargar. Intenta de nuevo en unos segundos."); $("mpZona").hidden = false;
+  }
 }
-map.on("moveend", () => { if (auto) { auto = false; cargar(); } else $("mpZona").style.display = "block"; });
+map.on("moveend", () => { if (auto) { auto = false; cargar(); } else $("mpZona").hidden = false; });
 $("mpZona").onclick = cargar;
 
-/* ---------- Buscar sitio y "cerca de mí" ---------- */
 async function geocodificar(q) {
   const j = await (await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(q))).json();
   return j.length ? [+j[0].lat, +j[0].lon] : null;
@@ -229,14 +215,14 @@ async function buscarLugar() {
   estado("Buscando lugar...");
   try {
     const ll = await geocodificar(q);
-    if (!ll) { estado("No encontré ese lugar."); return; }
+    if (!ll) return estado("No encontré ese lugar.");
     auto = true; map.flyTo(ll, 15);
-  } catch (e) { estado("No se pudo buscar el lugar."); }
+  } catch { estado("No se pudo buscar el lugar."); }
 }
 $("mpGo").onclick = buscarLugar;
-$("mpQ").onkeydown = e => { if (e.key === "Enter") buscarLugar(); };
+$("mpQ").onkeydown = e => e.key === "Enter" && buscarLugar();
 $("mpLoc").onclick = () => {
-  if (!navigator.geolocation) { estado("Tu navegador no permite ubicación."); return; }
+  if (!navigator.geolocation) return estado("Tu navegador no permite ubicación.");
   estado("Obteniendo tu ubicación...");
   navigator.geolocation.getCurrentPosition(p => {
     const ll = [p.coords.latitude, p.coords.longitude];
@@ -246,7 +232,6 @@ $("mpLoc").onclick = () => {
   }, () => estado("No pude obtener tu ubicación. Revisa el permiso del navegador."), { enableHighAccuracy: true, timeout: 10000 });
 };
 
-/* ---------- Lugares publicados por administradores ---------- */
 function pintarLugares() {
   grupos.lugares.clearLayers(); conteo.lugares = lugares.length;
   lugares.forEach(l => {
@@ -266,25 +251,26 @@ map.on("popupopen", e => {
   const b = e.popup.getElement().querySelector(".mp-del");
   if (b) b.onclick = async () => {
     if (!confirm("¿Quitar este lugar del mapa?")) return;
-    try { await deleteDoc(doc(db, "lugares", b.dataset.id)); lugares = lugares.filter(l => l.id !== b.dataset.id); map.closePopup(); pintarLugares(); }
-    catch (err) { alert("No se pudo quitar: " + err.code); }
+    try {
+      await deleteDoc(doc(db, "lugares", b.dataset.id));
+      lugares = lugares.filter(l => l.id !== b.dataset.id); map.closePopup(); pintarLugares();
+    } catch (err) { alert("No se pudo quitar: " + err.code); }
   };
 });
 
-/* ---------- Sugerir un lugar (solo con sesión iniciada) ---------- */
 $("btnSugerir").onclick = () => {
   $("modal").classList.add("on");
-  $("formBox").style.display = user ? "block" : "none";
-  $("loginBox").style.display = user ? "none" : "block";
+  $("formBox").hidden = !user;
+  $("loginBox").hidden = !!user;
   $("fMsg").textContent = ""; $("fMsg").className = "";
 };
 const cerrarModal = () => $("modal").classList.remove("on");
-$("fCerrar").onclick = cerrarModal; $("lCerrar").onclick = cerrarModal;
+$("fCerrar").onclick = $("lCerrar").onclick = cerrarModal;
 
 $("fEnviar").onclick = async () => {
-  const nombre = $("fNombre").value.trim(), descripcion = $("fDesc").value.trim(), direccion = $("fDir").value.trim();
-  const msg = $("fMsg"); msg.className = "";
-  if (!nombre || !descripcion || !direccion) { msg.textContent = "Completa el lugar, la descripción y la dirección."; return; }
+  const nombre = $("fNombre").value.trim(), descripcion = $("fDesc").value.trim(), direccion = $("fDir").value.trim(), msg = $("fMsg");
+  msg.className = "";
+  if (!nombre || !descripcion || !direccion) return msg.textContent = "Completa el lugar, la descripción y la dirección.";
   try {
     await addDoc(collection(db, "sugerencias"), {
       uid: user.uid, autor: user.displayName || "", email: user.email || "",
@@ -295,35 +281,34 @@ $("fEnviar").onclick = async () => {
   } catch (e) { msg.textContent = "No se pudo enviar: " + e.code; }
 };
 
-/* ---------- Administradores: revisar sugerencias y colocar lugares ---------- */
 async function cargarPendientes() {
   if (!esAdmin) return;
   try {
     pendientes = (await getDocs(query(collection(db, "sugerencias"), where("estado", "==", "pendiente")))).docs.map(d => ({ id: d.id, ...d.data() }));
     $("btnSug").textContent = `Sugerencias (${pendientes.length})`;
-    pintarPendientes();
+    $("lista").innerHTML = pendientes.length ? pendientes.map((s, i) => `
+      <div class="sug-card">
+        <h3>${esc(s.nombre)}</h3>
+        <p>${esc(s.descripcion)}</p>
+        <p><b>Dirección:</b> ${esc(s.direccion)}</p>
+        <small>Sugerido por ${esc(s.autor || s.email || "un usuario")}</small>
+        <div class="acc">
+          <button class="btn gris" data-a="r" data-i="${i}" type="button">Rechazar</button>
+          <button class="btn verde" data-a="u" data-i="${i}" type="button">Ubicar en el mapa</button>
+        </div>
+      </div>`).join("") : '<p style="text-align:center;color:#777">No hay sugerencias pendientes.</p>';
   } catch (e) { $("btnSug").textContent = "Sugerencias (error)"; console.warn("sugerencias:", e.code); }
 }
-function pintarPendientes() {
-  const L2 = $("lista"); L2.innerHTML = "";
-  if (!pendientes.length) { L2.innerHTML = "<p style='text-align:center;color:#777'>No hay sugerencias pendientes.</p>"; return; }
-  pendientes.forEach(s => {
-    const c = document.createElement("div"); c.className = "sug-card";
-    c.innerHTML = `<h3></h3><p></p><p><b>Dirección:</b> <span></span></p><small></small><div class="acc"><button class="btn gris" data-a="r" type="button">Rechazar</button><button class="btn verde" data-a="u" type="button">Ubicar en el mapa</button></div>`;
-    c.querySelector("h3").textContent = s.nombre;
-    c.querySelectorAll("p")[0].textContent = s.descripcion;
-    c.querySelector("span").textContent = s.direccion;
-    c.querySelector("small").textContent = "Sugerido por " + (s.autor || s.email || "un usuario");
-    c.querySelector('[data-a="u"]').onclick = () => colocar(s);
-    c.querySelector('[data-a="r"]').onclick = () => rechazar(s);
-    L2.appendChild(c);
-  });
-}
+$("lista").onclick = e => {
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const s = pendientes[+b.dataset.i];
+  b.dataset.a === "u" ? colocar(s) : rechazar(s);
+};
 $("btnSug").onclick = () => $("drawer").classList.toggle("on");
 $("dCerrar").onclick = () => $("drawer").classList.remove("on");
 
 async function rechazar(s) {
-  if (!confirm("¿Rechazar la sugerencia \"" + s.nombre + "\"?")) return;
+  if (!confirm(`¿Rechazar la sugerencia "${s.nombre}"?`)) return;
   try { await updateDoc(doc(db, "sugerencias", s.id), { estado: "rechazada" }); cargarPendientes(); }
   catch (e) { alert("No se pudo rechazar: " + e.code); }
 }
@@ -332,20 +317,19 @@ async function colocar(s) {
   $("drawer").classList.remove("on");
   pend = s; estado("Buscando la dirección en el mapa...");
   let ll = null;
-  try { ll = await geocodificar(s.direccion); } catch (e) {}
+  try { ll = await geocodificar(s.direccion); } catch {}
   if (marcador) map.removeLayer(marcador);
-  const pos = ll || [map.getCenter().lat, map.getCenter().lng];
-  marcador = L.marker(pos, { draggable: true }).addTo(map);
+  marcador = L.marker(ll || map.getCenter(), { draggable: true }).addTo(map);
   if (ll) map.flyTo(ll, 17);
   $("barraTxt").textContent = (ll ? "Verifica la ubicación de " : "No encontré la dirección. Haz clic en el mapa para ubicar ") + `"${s.nombre}". Puedes arrastrar el marcador.`;
-  $("barra").style.display = "flex";
+  $("barra").hidden = false;
   estado("Colocando: " + s.nombre);
 }
-map.on("click", e => { if (pend && marcador) marcador.setLatLng(e.latlng); });
+map.on("click", e => pend && marcador && marcador.setLatLng(e.latlng));
 
 function terminarColocar() {
   if (marcador) map.removeLayer(marcador);
-  marcador = null; pend = null; $("barra").style.display = "none";
+  marcador = pend = null; $("barra").hidden = true;
 }
 $("bCancelar").onclick = terminarColocar;
 $("bPublicar").onclick = async () => {
@@ -361,14 +345,13 @@ $("bPublicar").onclick = async () => {
   } catch (e) { alert("No se pudo publicar: " + e.code); }
 };
 
-/* ---------- Sesión y rol ---------- */
 onAuthStateChanged(auth, async u => {
   user = u; esAdmin = false;
-  if (u) { try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch (e) {} }
-  $("linkLogin").style.display = u ? "none" : "inline-block";
-  $("btnSug").style.display = esAdmin ? "inline-block" : "none";
+  if (u) try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch {}
+  $("linkLogin").hidden = !!u;
+  $("btnSug").hidden = !esAdmin;
   pintarLugares();
-  if (esAdmin) cargarPendientes();
+  cargarPendientes();
 });
 
 cargar();
