@@ -119,12 +119,20 @@ footer{text-align:center;padding:20px;color:#555}
   <footer>© EcoPuente · Cuidemos el planeta juntos</footer>
 </div>
 
+<!-- Script independiente para el menú lateral (garantiza que abra siempre) -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const menuBtn = document.getElementById("menuBtn");
+    if (menuBtn) {
+      menuBtn.onclick = () => document.body.classList.toggle("oculta");
+    }
+  });
+</script>
+
+<!-- Script de autenticación y Firebase -->
 <script type="module">
 import { auth, onAuthStateChanged, obtenerRol, cerrarSesion } from "./auth.js";
 const $ = id => document.getElementById(id);
-
-// Aseguramos que el botón del menú responda de inmediato sin depender de la carga de Firebase
-$("menuBtn").onclick = () => document.body.classList.toggle("oculta");
 
 onAuthStateChanged(auth, async user => {
   const nombre = user && (user.displayName || user.email);
