@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Donaciones</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.caja{max-width:680px;margin:0 auto}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.causas{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.causa{border:2px solid var(--linea);border-radius:16px;padding:16px;text-align:center;cursor:pointer;background:#fff;margin:0}
+.causa:hover{border-color:var(--hoja)}
+.causa.selected{border-color:var(--bosque);background:var(--menta)}
+.causa input{display:none}
+.causa b{display:block;font-size:15px}
+.causa small{color:var(--gris);font-weight:400}
+.rapidos{display:flex;gap:10px;margin:8px 0 10px}
+.rapidos button{flex:1;padding:9px;border:1px solid var(--linea);background:#fff;border-radius:999px;cursor:pointer;font:500 14px 'DM Sans'}
+.rapidos button:hover{background:var(--menta)}
+.botones{display:flex;gap:12px;margin-top:22px}
+.botones .btn{flex:1;text-align:center}
+.botones .btn:first-child{flex:2}
+@media(max-width:560px){.dos{grid-template-columns:1fr}.botones{flex-direction:column-reverse}}
+</style>
+</head>
+<body data-activo="donaciones">
+<main class="principal">
+  <div class="wrap">
+    <div class="caja card" style="padding:34px">
+      <h1 style="font-size:34px;margin-bottom:6px">Siembra Futuro Colombia</h1>
+      <p class="sub" style="margin:0 0 10px">Apoya causas locales por el agua, los árboles y la movilidad sostenible.</p>
+
+      <form id="donationForm">
+        <label for="dNombre">Nombre completo *</label>
+        <input type="text" id="dNombre" required placeholder="Ej. Camilo Andrés Pérez">
+
+        <div class="dos">
+          <div><label for="email">Correo electrónico *</label><input type="email" id="email" required placeholder="tu@email.com"></div>
+          <div><label for="telefono">Teléfono / WhatsApp *</label><input type="tel" id="telefono" required placeholder="300 123 4567"></div>
+        </div>
+
+        <label>¿A qué causa quieres donar? *</label>
+        <div class="causas">
+          <label class="causa" onclick="selectCause(this)">
+            <input type="radio" name="causa" value="agua" data-org="Fundación Natura Colombia" data-url="https://natura.org.co/donaciones" required>
+            <b>Protección del agua</b><small>Fundación Natura</small>
+          </label>
+          <label class="causa" onclick="selectCause(this)">
+            <input type="radio" name="causa" value="arboles" data-org="Red de Árboles Colombia" data-url="https://www.reddearboles.org/donar-arboles" required>
+            <b>Reforestación</b><small>Red de Árboles</small>
+          </label>
+          <label class="causa" onclick="selectCause(this)">
+            <input type="radio" name="causa" value="bicicleta" data-org="Despacio / BiciRed Colombia" data-url="https://www.despacio.org/hazte-socio" required>
+            <b>Movilidad en bici</b><small>Despacio / BiciRed</small>
+          </label>
+        </div>
+
+        <label for="monto">Monto a donar (COP) *</label>
+        <div class="rapidos">
+          <button type="button" onclick="setAmount(20000)">$20.000</button>
+          <button type="button" onclick="setAmount(50000)">$50.000</button>
+          <button type="button" onclick="setAmount(100000)">$100.000</button>
+        </div>
+        <input type="number" id="monto" min="5000" step="1000" required placeholder="Mínimo $5.000 COP">
+
+        <label for="metodoPago">Método de pago *</label>
+        <select id="metodoPago" required>
+          <option value="" disabled selected>Selecciona un método de pago</option>
+          <option value="PSE">PSE (débito bancario Colombia)</option>
+          <option value="Tarjeta">Tarjeta de crédito / débito</option>
+          <option value="Nequi">Nequi / Daviplata</option>
+          <option value="Efectivo">Efecty / Baloto (efectivo)</option>
+        </select>
+
+        <div class="botones">
+          <button type="submit" class="btn">Continuar al pago</button>
+          <a href="index.html" class="btn sec">Volver</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+<script src="nav.js"></script>
+<script>
+function selectCause(el){
+  document.querySelectorAll('.causa').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked=true;
+}
+function setAmount(v){document.getElementById('monto').value=v}
+document.getElementById('donationForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const nombre=document.getElementById('dNombre').value;
+  const monto=parseInt(document.getElementById('monto').value).toLocaleString('es-CO');
+  const metodo=document.getElementById('metodoPago').value;
+  const c=document.querySelector('input[name="causa"]:checked');
+  alert(`¡Gracias ${nombre}!\n\nSerás redirigido para completar tu donación de $${monto} COP a través de ${metodo} directamente hacia "${c.dataset.org}".`);
+  window.location.href=c.dataset.url;
+});
+</script>
+</body>
+</html>

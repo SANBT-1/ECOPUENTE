@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Mis hábitos</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.resumen{display:grid;grid-template-columns:auto 1fr 1fr;gap:18px;align-items:center;margin-bottom:22px}
+.anillo{--p:0;width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--hoja) calc(var(--p)*1%),var(--menta) 0);display:grid;place-items:center}
+.anillo span{width:90px;height:90px;border-radius:50%;background:#fff;display:grid;place-items:center;font:800 26px 'Bricolage Grotesque',sans-serif;color:var(--bosque)}
+.semana{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.semana button{background:#fff;border:1px solid var(--linea);border-radius:50%;width:36px;height:36px;cursor:pointer;color:var(--bosque);font-size:16px}
+.semana b{min-width:150px;text-align:center}
+.tabla{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{padding:10px 6px;text-align:center;border-bottom:1px solid var(--linea)}
+th{font-size:13px;color:var(--gris);font-weight:500;text-transform:capitalize}
+th.hoy{color:var(--bosque);font-weight:700}
+td:first-child,th:first-child{text-align:left;font-weight:500}
+.ck{width:32px;height:32px;border-radius:50%;border:2px solid var(--linea);background:#fff;cursor:pointer}
+.ck:hover:not(:disabled){border-color:var(--hoja)}
+.ck.on{background:var(--hoja);border-color:var(--hoja);box-shadow:inset 0 0 0 5px #fff,inset 0 0 0 20px var(--bosque)}
+.ck:disabled{opacity:.35;cursor:not-allowed}
+.x{background:none;border:0;color:#aaa;font-size:20px;cursor:pointer}
+.x:hover{color:#c0392b}
+.nuevo{display:flex;gap:10px;margin-top:18px}
+.nuevo input{flex:1}
+.nuevo .btn{width:auto}
+@media(max-width:700px){.resumen{grid-template-columns:1fr 1fr}.anillo{grid-column:1/3;justify-self:center}}
+</style>
+</head>
+<body data-activo="habitos">
+<main class="principal">
+  <div class="wrap">
+    <h1 style="font-size:42px;margin-bottom:8px">Mis hábitos</h1>
+    <p class="sub">Marca cada día lo que hiciste por el planeta. Tu progreso se guarda en este navegador.</p>
+
+    <div class="resumen">
+      <div class="anillo" id="anillo"><span id="pct">0 %</span></div>
+      <div class="kpi"><b id="racha">0</b><span>días seguidos con al menos un hábito</span></div>
+      <div class="kpi"><b id="semanaTotal">0</b><span>hábitos cumplidos esta semana</span></div>
+    </div>
+
+    <div class="card">
+      <div class="semana">
+        <button id="prev" aria-label="Semana anterior">&#10094;</button>
+        <b id="rango"></b>
+        <button id="next" aria-label="Semana siguiente">&#10095;</button>
+      </div>
+      <div class="tabla" id="tabla"></div>
+      <form class="nuevo" id="nuevo">
+        <input id="nombreH" type="text" maxlength="60" placeholder="Agrega un hábito, por ejemplo: llevar mi botella" aria-label="Nuevo hábito">
+        <button class="btn" type="submit">Agregar</button>
+      </form>
+    </div>
+  </div>
+</main>
+<script src="nav.js"></script>
+<script>
+const K="ecopuente_habitos",$=id=>document.getElementById(id);
+const base={lista:[{id:1,n:"Reciclar y separar residuos"},{id:2,n:"Ahorrar agua"},{id:3,n:"Apagar luces y desconectar aparatos"},{id:4,n:"Caminar, usar bici o transporte público"},{id:5,n:"Usar bolsa reutilizable"}],hechos:{}};
+let H;try{H=JSON.parse(localStorage.getItem(K))||base}catch{H=base}
+const guardar=()=>{try{localStorage.setItem(K,JSON.stringify(H))}catch{}};
+const key=d=>d.toLocaleDateString("sv");
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dia=k=>(H.hechos[k]||[]).filter(id=>H.lista.some(x=>x.id===id));
+let off=0;
+function pintar(){
+  const hoy=key(new Date()),ini=new Date();
+  ini.setHours(0,0,0,0);ini.setDate(ini.getDate()-((ini.getDay()+6)%7)+off*7);
+  const dias=[...Array(7)].map((_,i)=>{const d=new Date(ini);d.setDate(d.getDate()+i);return d});
+  const f=d=>d.toLocaleDateString("es",{day:"numeric",month:"short"});
+  $("rango").textContent=f(dias[0])+" – "+f(dias[6]);
+  let h='<table><thead><tr><th>Hábito</th>'+dias.map(d=>`<th class="${key(d)===hoy?"hoy":""}">${d.toLocaleDateString("es",{weekday:"short"})}<br>${d.getDate()}</th>`).join("")+'<th></th></tr></thead><tbody>';
+  H.lista.forEach(x=>{
+    h+=`<tr><td>${esc(x.n)}</td>`+dias.map(d=>{const k=key(d);return `<td><button class="ck${dia(k).includes(x.id)?" on":""}" data-i="${x.id}" data-k="${k}" ${k>hoy?"disabled":""} aria-label="${esc(x.n)}, ${f(d)}"></button></td>`}).join("")+`<td><button class="x" data-del="${x.id}" aria-label="Quitar hábito">&times;</button></td></tr>`;
+  });
+  $("tabla").innerHTML=h+"</tbody></table>"+(H.lista.length?"":'<p style="padding:20px;text-align:center;color:var(--gris)">Aún no tienes hábitos. Agrega el primero abajo.</p>');
+  const p=H.lista.length?Math.round(dia(hoy).length/H.lista.length*100):0;
+  $("anillo").style.setProperty("--p",p);$("pct").textContent=p+" %";
+  $("semanaTotal").textContent=dias.reduce((s,d)=>s+dia(key(d)).length,0);
+  let r=0,d=new Date();if(!dia(key(d)).length)d.setDate(d.getDate()-1);
+  while(dia(key(d)).length){r++;d.setDate(d.getDate()-1)}
+  $("racha").textContent=r;
+}
+$("tabla").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.del){if(confirm("¿Quitar este hábito?")){H.lista=H.lista.filter(x=>x.id!=b.dataset.del);guardar();pintar()}return}
+  const k=b.dataset.k,id=+b.dataset.i,a=H.hechos[k]||[];
+  H.hechos[k]=a.includes(id)?a.filter(x=>x!==id):[...a,id];
+  guardar();pintar();
+};
+$("nuevo").onsubmit=e=>{
+  e.preventDefault();const n=$("nombreH").value.trim();if(!n)return;
+  H.lista.push({id:Date.now(),n});$("nombreH").value="";guardar();pintar();
+};
+$("prev").onclick=()=>{off--;pintar()};
+$("next").onclick=()=>{off++;pintar()};
+pintar();
+</script>
+</body>
+</html>

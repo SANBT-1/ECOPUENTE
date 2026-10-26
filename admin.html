@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Panel admin</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+#buscar{margin-bottom:14px}
+.fila{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--linea);flex-wrap:wrap}
+.av{width:42px;height:42px;border-radius:50%;background:var(--hoja);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.info{flex:1;min-width:180px;line-height:1.3}
+.info small{color:var(--gris)}
+.fila button{border:0;border-radius:999px;padding:9px 16px;color:#fff;font:700 14px 'DM Sans';cursor:pointer;background:#8e44ad}
+.fila button.quitar{background:#c0392b}
+.fila button:disabled{background:#bbb;cursor:not-allowed}
+#estado{text-align:center;color:var(--gris);padding:20px}
+</style>
+</head>
+<body data-activo="admin">
+<main class="principal">
+  <div class="wrap">
+    <h1 style="font-size:38px;margin-bottom:6px">Panel de administración</h1>
+    <p class="sub">Decide quién es administrador en EcoPuente.</p>
+    <div class="card">
+      <h2 style="font-size:24px;margin-bottom:12px">Usuarios registrados</h2>
+      <input id="buscar" type="search" placeholder="Buscar por nombre o correo...">
+      <div id="estado">Verificando permisos...</div>
+      <div id="lista"></div>
+    </div>
+  </div>
+</main>
+<script src="nav.js"></script>
+<script type="module">
+import { auth, db, onAuthStateChanged, obtenerRol } from "./auth.js";
+import { collection, getDocs, doc, updateDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = id => document.getElementById(id);
+let usuarios = [], yo = null;
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = "inicia-sesion.html"; return; }
+  const rol = await obtenerRol(user);
+  if (rol !== "administrador") { location.href = "index.html"; return; } // no es admin: fuera
+  yo = user.uid;
+  cargar();
+});
+
+async function cargar() {
+  $("estado").textContent = "Cargando usuarios...";
+  try {
+    const snap = await getDocs(collection(db, "usuarios"));
+    usuarios = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.nombre || a.email).localeCompare(b.nombre || b.email));
+    $("estado").style.display = "none";
+    pintar();
+  } catch (e) {
+    $("estado").textContent = "No se pudo cargar (¿publicaste las reglas de Firestore?): " + e.code;
+  }
+}
+
+function pintar() {
+  const q = $("buscar").value.toLowerCase();
+  const lista = usuarios.filter(u => ((u.nombre || "") + (u.email || "")).toLowerCase().includes(q));
+  $("lista").innerHTML = "";
+  lista.forEach(u => {
+    const esYo = u.id === yo, esAdmin = u.rol === "administrador";
+    const f = document.createElement("div");
+    f.className = "fila";
+    f.innerHTML = `
+      <div class="av">${(u.nombre || u.email || "?")[0].toUpperCase()}</div>
+      <div class="info"><b></b>${esYo ? " (tú)" : ""}<br><small></small></div>
+      <span class="rol ${u.rol}">${u.rol}</span>
+      <button class="${esAdmin ? "quitar" : ""}" ${esYo ? "disabled title='No puedes cambiar tu propio rol'" : ""}>
+        ${esAdmin ? "Quitar administrador" : "Hacer administrador"}</button>`;
+    f.querySelector("b").textContent = u.nombre || "(sin nombre)";   // textContent evita inyectar HTML
+    f.querySelector("small").textContent = u.email || "";
+    f.querySelector("button").onclick = () => cambiar(u, esAdmin ? "usuario" : "administrador");
+    $("lista").appendChild(f);
+  });
+  if (!lista.length) $("lista").innerHTML = "<p style='text-align:center;color:#777'>Sin resultados</p>";
+}
+
+async function cambiar(u, nuevo) {
+  const txt = nuevo === "administrador" ? "dar permiso de administrador a" : "quitar el permiso de administrador a";
+  if (!confirm(`¿Seguro que quieres ${txt} ${u.nombre || u.email}?`)) return;
+  try {
+    await updateDoc(doc(db, "usuarios", u.id), { rol: nuevo });
+    u.rol = nuevo;
+    pintar();
+  } catch (e) { alert("No se pudo cambiar el rol: " + e.code); }
+}
+
+$("buscar").oninput = pintar;
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Naturaleza</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.pestanas{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.pestanas button{border:0;background:#fff;color:var(--gris);padding:11px 22px;border-radius:999px;font:700 15px 'DM Sans';cursor:pointer;box-shadow:var(--sombra)}
+.pestanas button.on{background:var(--bosque);color:#fff}
+.eco{display:grid;grid-template-columns:1.3fr 1fr;gap:26px;background:var(--menta);border-radius:36px 36px 8px 36px;padding:34px}
+.eco h2{font-size:32px;margin-bottom:10px}
+.eco .dato{background:#fff;border-radius:22px;padding:22px;align-self:start}
+.eco .dato b{display:block;font:800 44px 'Bricolage Grotesque',sans-serif;color:var(--hoja)}
+.eco ul{margin:12px 0 0 20px}
+.eco li{margin-bottom:6px}
+.quiz .op{display:block;width:100%;text-align:left;margin:8px 0;padding:13px 16px;border-radius:14px;border:2px solid var(--linea);background:#fff;cursor:pointer;font:500 15px 'DM Sans'}
+.quiz .op:hover:not(:disabled){border-color:var(--hoja)}
+.quiz .op.bien{border-color:var(--bosque);background:var(--menta)}
+.quiz .op.mal{border-color:#c0392b;background:#fdecea}
+.quiz h3{font-size:22px;margin-bottom:8px}
+#cuenta{color:var(--gris);font-size:14px}
+@media(max-width:760px){.eco{grid-template-columns:1fr;padding:24px}}
+</style>
+</head>
+<body data-activo="naturaleza">
+<main class="principal">
+  <div class="wrap">
+    <h1 style="font-size:42px;margin-bottom:8px">Naturaleza</h1>
+    <p class="sub">Elige un ecosistema para ver por qué importa y qué puedes hacer. Luego pon a prueba lo que aprendiste.</p>
+
+    <div class="pestanas" id="pestanas" role="tablist"></div>
+    <section class="eco" id="eco" aria-live="polite"></section>
+
+    <h2 class="t">Pon a prueba lo que sabes</h2>
+    <div class="card quiz" style="max-width:680px">
+      <span id="cuenta"></span>
+      <div id="pregunta"></div>
+    </div>
+  </div>
+</main>
+<script src="nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const E=[
+ {n:"Bosques",t:"Los pulmones de la Tierra",d:"32 %",dt:"de la superficie terrestre está cubierta por bosques.",p:"Limpian el aire, guardan agua en el suelo y dan hogar a la fauna. La deforestación bajó de 17,6 a 10,9 millones de hectáreas al año, pero todavía es alta.",a:["Siembra especies nativas de tu región","Prefiere papel reciclado y madera certificada","Cuida los árboles de tu barrio"]},
+ {n:"Agua",t:"Un recurso vital que cuidamos entre todos",d:"2.200 M",dt:"de personas aún no tienen agua potable segura.",p:"Se prevé que la demanda de agua dulce crezca más del 40 % hacia 2050, así que cada gota cuenta.",a:["Cierra el grifo al cepillarte los dientes","Toma duchas cortas y repara las fugas","No tires aceite ni plásticos por el desagüe"]},
+ {n:"Aire y energía",t:"Energía limpia para respirar mejor",d:"33 %",dt:"de la electricidad mundial ya es renovable.",p:"La energía solar es la que más crece y se proyecta que la participación renovable llegue al 37 % en 2027.",a:["Apaga luces y desconecta aparatos","Usa bombillos LED","Camina, pedalea o usa transporte público"]}
+];
+let ei=0;
+function eco(i){
+  ei=i;const e=E[i];
+  $("pestanas").innerHTML=E.map((x,k)=>`<button role="tab" class="${k===i?"on":""}" data-k="${k}">${x.n}</button>`).join("");
+  $("eco").innerHTML=`<div><h2>${e.t}</h2><p>${e.p}</p><h3 style="font-size:18px;margin-top:16px">Qué puedes hacer</h3><ul>${e.a.map(a=>`<li>${a}</li>`).join("")}</ul></div><div class="dato"><b>${e.d}</b>${e.dt}</div>`;
+}
+$("pestanas").onclick=e=>{const b=e.target.closest("button");if(b)eco(+b.dataset.k)};
+eco(0);
+
+const Q=[
+ ["¿Qué parte de la superficie terrestre cubren los bosques?",["Cerca del 12 %","Cerca del 32 %","Cerca del 60 %"],1],
+ ["¿Cuántas personas aún no tienen agua potable segura?",["220 millones","2.200 millones","6.000 millones"],1],
+ ["¿Cuánto de la electricidad mundial es renovable hoy?",["Cerca de un tercio","Cerca de una décima parte","Cerca de tres cuartos"],0],
+ ["¿Cuántas toneladas de plástico llegan al mar cada año?",["Cerca de 1 millón","Más de 11 millones","Más de 110 millones"],1]
+];
+let q=0,pts=0;
+function pregunta(){
+  if(q>=Q.length){
+    $("cuenta").textContent="";
+    $("pregunta").innerHTML=`<h3>Obtuviste ${pts} de ${Q.length}</h3><p>${pts===Q.length?"Perfecto. Ya eres parte del puente.":"Repasa la sección Información y vuelve a intentarlo."}</p><button class="btn" id="otra" style="margin-top:12px">Jugar otra vez</button>`;
+    $("otra").onclick=()=>{q=0;pts=0;pregunta()};return;
+  }
+  const [t,o,c]=Q[q];
+  $("cuenta").textContent=`Pregunta ${q+1} de ${Q.length}`;
+  $("pregunta").innerHTML=`<h3>${t}</h3>`+o.map((x,i)=>`<button class="op" data-i="${i}">${x}</button>`).join("")+`<p id="fb" style="min-height:24px;font-weight:700;margin-top:8px"></p>`;
+  $("pregunta").onclick=e=>{
+    const b=e.target.closest(".op");if(!b)return;
+    const ok=+b.dataset.i===c;if(ok)pts++;
+    document.querySelectorAll(".op").forEach((x,i)=>{x.disabled=true;if(i===c)x.classList.add("bien")});
+    if(!ok)b.classList.add("mal");
+    $("fb").innerHTML=(ok?"Correcto. ":"Casi. ")+'<button class="btn sec" id="sig" style="padding:8px 18px;margin-left:6px">Siguiente</button>';
+    $("sig").onclick=()=>{q++;pregunta()};
+    $("pregunta").onclick=null;
+  };
+}
+pregunta();
+</script>
+</body>
+</html>

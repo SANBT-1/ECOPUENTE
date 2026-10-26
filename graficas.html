@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Datos estadísticos</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.cv{height:260px;position:relative}
+.card h3{margin-top:0}
+.nota{color:var(--gris);font-size:14px;margin-top:10px}
+</style>
+</head>
+<body data-activo="datos">
+<main class="principal">
+  <div class="wrap">
+    <h1 style="font-size:42px;margin-bottom:8px">Datos estadísticos</h1>
+    <p class="sub">Las cifras de la sección Información, en gráficas. Pasa el cursor sobre cada barra para ver el valor.</p>
+
+    <div class="kpis">
+      <div class="kpi"><b>2.200 M</b><span>de personas sin agua potable segura</span></div>
+      <div class="kpi"><b>3.500 M</b><span>de personas sin saneamiento seguro</span></div>
+      <div class="kpi"><b>+11 M t</b><span>de plástico llegan al mar cada año</span></div>
+    </div>
+
+    <div class="grid" style="margin-top:26px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+      <div class="card">
+        <h3>Deforestación anual</h3>
+        <div class="cv"><canvas id="g1" role="img" aria-label="Deforestación: 17,6 millones de hectáreas al año en los años noventa y 10,9 entre 2015 y 2025"></canvas></div>
+        <p class="nota">Millones de hectáreas por año. Bajó, pero sigue siendo alta.</p>
+      </div>
+      <div class="card">
+        <h3>Residuos del mundo</h3>
+        <div class="cv"><canvas id="g2" role="img" aria-label="Residuos: 2.560 millones de toneladas en 2022 y 3.860 proyectados para 2050"></canvas></div>
+        <p class="nota">Millones de toneladas. El dato de 2050 es una proyección si todo sigue igual.</p>
+      </div>
+      <div class="card">
+        <h3>Electricidad renovable</h3>
+        <div class="cv"><canvas id="g3" role="img" aria-label="Renovables: 33 % en 2025 y 37 % proyectado en 2027"></canvas></div>
+        <p class="nota">Porcentaje de la electricidad mundial. El dato de 2027 es una proyección de la AIE.</p>
+      </div>
+      <div class="card">
+        <h3>Bosques en la Tierra</h3>
+        <div class="cv"><canvas id="g4" role="img" aria-label="Los bosques cubren cerca del 32 % de la superficie terrestre"></canvas></div>
+        <p class="nota">Cerca del 32 % de la superficie terrestre.</p>
+      </div>
+    </div>
+  </div>
+  <footer>Datos tomados de la sección Información de EcoPuente.</footer>
+</main>
+<script src="nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+Chart.defaults.font.family="'DM Sans',sans-serif";
+Chart.defaults.color="#5b6b62";
+const $=id=>document.getElementById(id);
+const op=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString("es-CO")+" "+u}}},scales:{y:{beginAtZero:true,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}});
+const barras=(id,labels,data,u)=>new Chart($(id),{type:"bar",data:{labels,datasets:[{data,backgroundColor:["#95D5B2","#2D6A4F"],borderRadius:12}]},options:op(u)});
+barras("g1",["Años noventa","2015–2025"],[17.6,10.9],"M ha/año");
+barras("g2",["2022","2050 (proyección)"],[2560,3860],"M t");
+new Chart($("g3"),{type:"line",data:{labels:["2025","2027 (proyección)"],datasets:[{data:[33,37],borderColor:"#2D6A4F",backgroundColor:"rgba(82,183,136,.25)",fill:true,tension:.3,pointRadius:6,pointBackgroundColor:"#2D6A4F"}]},options:{...op("%"),scales:{y:{min:0,max:50,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}}});
+new Chart($("g4"),{type:"doughnut",data:{labels:["Bosques","Otras superficies"],datasets:[{data:[32,68],backgroundColor:["#2D6A4F","#D8F3DC"],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:"66%",plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>c.label+": "+c.parsed+" %"}}}}});
+</script>
+</body>
+</html>

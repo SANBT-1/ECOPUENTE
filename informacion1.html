@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Información</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.dos{display:grid;grid-template-columns:1fr 1.2fr;gap:34px;align-items:center;margin-top:40px}
+.dos h3{font-size:28px;margin-bottom:12px}
+.dos p{margin-bottom:12px}
+.carrusel{position:relative;overflow:hidden;border-radius:28px 28px 8px 28px;box-shadow:var(--sombra);background:#fff}
+.pistas{display:flex;transition:transform .6s ease}
+.pistas img{min-width:100%;height:320px;object-fit:cover}
+.bc{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.9);border:0;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer;color:var(--bosque)}
+.ant{left:10px}.sig{right:10px}
+.puntos{position:absolute;bottom:12px;width:100%;display:flex;justify-content:center;gap:8px}
+.punto{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.55);border:0;cursor:pointer}
+.punto.activo{background:#fff;transform:scale(1.25)}
+.ayuda{background:var(--crema);margin-top:50px;padding:46px 0}
+.ayuda .card{border-left:6px solid var(--hoja);border-radius:8px 22px 22px 8px}
+@media(max-width:850px){.dos{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-activo="informacion">
+<main class="principal">
+  <div class="wrap">
+    <h1 class="t" style="margin-top:0;font-size:42px">Conoce EcoPuente</h1>
+    <p class="sub">Algunos ejemplos de lo que protegemos y de por qué cuidarlos es urgente.</p>
+
+    <div class="grid">
+      <article class="card">
+        <img class="im" style="object-fit:cover;padding:0" src="imagene/Bosque.jfif" alt="Bosques">
+        <h3>Bosques</h3>
+        <p>Los pulmones de la Tierra que debemos conservar: cubren cerca del 32 % de la superficie terrestre, unas 0,5 hectáreas por persona. La deforestación bajó de 17,6 millones de hectáreas al año en los años noventa a 10,9 millones entre 2015 y 2025, aunque sigue siendo una cifra alta. Los bosques primarios ocupan al menos 1.180 millones de hectáreas.</p>
+      </article>
+      <article class="card">
+        <img class="im" style="object-fit:cover;padding:0" src="imagene/Lago.jfif" alt="Lagos">
+        <h3>Agua</h3>
+        <p>Un recurso vital que cuidamos entre todos; 2.200 millones de personas aún carecen de agua potable segura y 3.500 millones no tienen saneamiento seguro. Además, se prevé que la demanda de agua dulce crezca más del 40 % hacia 2050. De los 153 países que comparten recursos hídricos, solo 24 tienen acuerdos que cubren todas sus aguas compartidas.</p>
+      </article>
+      <article class="card">
+        <img class="im" style="object-fit:cover;padding:0" src="imagene/Turbinas.jfif" alt="Turbinas">
+        <h3>Energía limpia</h3>
+        <p>Fuentes renovables para un futuro sostenible; ya aportan cerca de un tercio de la electricidad mundial, y la energía solar es la que más crece. La AIE proyecta que las renovables superen al carbón como principal fuente de electricidad en 2026 y que su participación pase del 33 % en 2025 al 37 % en 2027.</p>
+      </article>
+    </div>
+
+    <div class="dos">
+      <div>
+        <h3>¿Qué es EcoPuente?</h3>
+        <p>EcoPuente es un proyecto que conecta a las personas con acciones sencillas y reales para proteger la naturaleza, y que funciona como un puente entre los datos científicos y las decisiones cotidianas.</p>
+        <p>Creemos que los pequeños cambios de cada día, sumados, construyen un planeta más limpio y saludable para todos. Los residuos, por ejemplo, pasarían de 2.560 millones de toneladas en 2022 a 3.860 millones en 2050 si seguimos igual, pero con prevención y reciclaje ese aumento puede reducirse.</p>
+      </div>
+      <div class="carrusel">
+        <div class="pistas" id="pistas">
+          <img src="imagene/Paisaje1n.jpg" alt="Paisaje 1">
+          <img src="imagene/Paisaje4n.jpg" alt="Paisaje 2">
+          <img src="imagene/paisaje2n.jpg" alt="Paisaje 3">
+          <img src="imagene/paisaje3n.jpg" alt="Paisaje 4">
+        </div>
+        <button class="bc ant" id="anterior" aria-label="Anterior">&#10094;</button>
+        <button class="bc sig" id="siguiente" aria-label="Siguiente">&#10095;</button>
+        <div class="puntos" id="puntos"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="ayuda">
+    <div class="wrap" style="padding-bottom:0">
+      <h2 style="font-size:34px">Ayuda</h2>
+      <p class="sub">Formas sencillas de ayudar al medio ambiente desde tu casa, con datos que muestran por qué importan.</p>
+      <div class="grid">
+        <article class="card"><h3>Recicla</h3><p>Separa papel, plástico, vidrio y orgánicos para que puedan reutilizarse.</p></article>
+        <article class="card"><h3>Ahorra agua</h3><p>Cierra el grifo al cepillarte, toma duchas cortas y repara las fugas; cerca de la mitad de la población mundial sufre escasez severa de agua.</p></article>
+        <article class="card"><h3>Ahorra energía</h3><p>Apaga luces y desconecta aparatos que no uses; prefiere bombillos LED. Cada ahorro permite que la energía renovable, que ya aporta un tercio de la electricidad mundial, cubra una parte mayor de la demanda.</p></article>
+        <article class="card"><h3>Transporte sostenible</h3><p>Camina, usa la bicicleta o el transporte público siempre que puedas; esto reduce las emisiones de gases de efecto invernadero y mejora la calidad del aire.</p></article>
+        <article class="card"><h3>Siembra árboles</h3><p>Planta y cuida árboles: limpian el aire y dan hogar a la fauna; cerca de una quinta parte de los bosques ya está en áreas protegidas, y tú puedes sumar plantando especies nativas de tu región.</p></article>
+        <article class="card"><h3>Consume responsablemente</h3><p>Lleva tu bolsa reutilizable, evita los plásticos de un solo uso y compra solo lo necesario; más de 11 millones de toneladas de plástico llegan al mar cada año, y cerca del 65 % del plástico de los residuos urbanos es de un solo uso.</p></article>
+      </div>
+    </div>
+  </section>
+  <footer>© 2026 EcoPuente · Cuidemos juntos el planeta</footer>
+</main>
+<script src="nav.js"></script>
+<script>
+const pistas=document.getElementById('pistas'),total=pistas.children.length,cp=document.getElementById('puntos');
+let actual=0,tm;
+for(let i=0;i<total;i++){const p=document.createElement('button');p.className='punto';p.setAttribute('aria-label','Ir a la imagen '+(i+1));p.onclick=()=>{irA(i);reiniciar()};cp.appendChild(p)}
+function irA(i){actual=(i+total)%total;pistas.style.transform='translateX(-'+actual*100+'%)';document.querySelectorAll('.punto').forEach((p,k)=>p.classList.toggle('activo',k===actual))}
+function reiniciar(){clearInterval(tm);tm=setInterval(()=>irA(actual+1),4000)}
+document.getElementById('anterior').onclick=()=>{irA(actual-1);reiniciar()};
+document.getElementById('siguiente').onclick=()=>{irA(actual+1);reiniciar()};
+irA(0);reiniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Bicicletas</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center;background:var(--bosque);color:#fff;border-radius:36px 8px 36px 36px;padding:34px}
+.calc h2,.calc label{color:#fff}
+.calc p{color:#cfeedd}
+.calc input,.calc select{margin-bottom:6px}
+.res{background:#fff;color:var(--tinta);border-radius:24px;padding:26px;text-align:center}
+.res b{display:block;font:800 52px 'Bricolage Grotesque',sans-serif;color:var(--bosque);line-height:1}
+.res span{color:var(--gris);font-size:14px}
+.res hr{border:0;border-top:1px solid var(--linea);margin:16px 0}
+.lista label{display:flex;align-items:center;gap:12px;font-weight:500;margin:0;padding:12px 0;border-bottom:1px solid var(--linea);cursor:pointer}
+.lista input{width:22px;height:22px;accent-color:var(--bosque);flex:none;padding:0}
+.barra{height:10px;background:var(--menta);border-radius:99px;overflow:hidden;margin:6px 0 14px}
+.barra i{display:block;height:100%;width:0;background:var(--hoja);transition:width .3s}
+@media(max-width:760px){.calc{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-activo="bicicletas">
+<main class="principal">
+  <div class="wrap">
+    <h1 style="font-size:42px;margin-bottom:8px">Bicicletas a tu alcance</h1>
+    <p class="sub">Cada kilómetro en bici es un kilómetro sin humo. Calcula cuánto aportas y revisa tu bici antes de salir.</p>
+
+    <section class="calc" aria-label="Calculadora de CO2">
+      <div>
+        <h2 style="font-size:30px;margin-bottom:8px">¿Cuánto CO₂ ahorras?</h2>
+        <p style="margin-bottom:14px">Escribe cuánto pedaleas en lugar de usar otro vehículo.</p>
+        <label for="km">Kilómetros por día</label>
+        <input id="km" type="number" min="0" step="0.5" value="5">
+        <label for="dias">Días por semana</label>
+        <input id="dias" type="number" min="0" max="7" value="5">
+        <label for="veh">Vehículo que dejas de usar</label>
+        <select id="veh">
+          <option value="0.17">Carro particular</option>
+          <option value="0.10">Moto</option>
+          <option value="0.08">Bus</option>
+        </select>
+      </div>
+      <div class="res">
+        <b id="rSem">0</b><span>kg de CO₂ menos por semana</span>
+        <hr>
+        <b id="rAnio" style="font-size:36px">0</b><span>kg de CO₂ menos al año</span>
+        <p class="nota" style="font-size:12px;color:var(--gris);margin-top:14px">Estimación con emisiones promedio por kilómetro (carro 0,17 kg, moto 0,10 kg, bus 0,08 kg por persona). Tu caso real puede variar.</p>
+      </div>
+    </section>
+
+    <h2 class="t">Por qué conviene pedalear</h2>
+    <div class="grid">
+      <div class="card"><h3>Menos emisiones</h3><p>Reduce los gases de efecto invernadero del transporte y mejora la calidad del aire que respiramos.</p></div>
+      <div class="card"><h3>Menos ruido y tráfico</h3><p>Una bici ocupa mucho menos espacio que un carro y no hace ruido.</p></div>
+      <div class="card"><h3>Mejor salud</h3><p>Pedalear es ejercicio diario sin tener que sacar tiempo extra para el gimnasio.</p></div>
+      <div class="card"><h3>Ahorro de dinero</h3><p>Sin gasolina, sin parqueadero y con un mantenimiento mucho más barato.</p></div>
+    </div>
+
+    <h2 class="t">Revisa tu bici antes de salir</h2>
+    <div class="card lista" style="max-width:640px">
+      <div class="barra"><i id="prog"></i></div>
+      <label><input type="checkbox"> Los frenos delantero y trasero responden bien</label>
+      <label><input type="checkbox"> Las llantas tienen buena presión</label>
+      <label><input type="checkbox"> La cadena está limpia y engrasada</label>
+      <label><input type="checkbox"> Tengo casco bien ajustado</label>
+      <label><input type="checkbox"> Llevo luces o reflectores si voy a salir de noche</label>
+      <p id="listo" style="margin-top:14px;font-weight:700;color:var(--bosque)"></p>
+    </div>
+
+    <div class="acciones" style="margin-top:30px">
+      <a class="btn" href="mapa.html">Ver puntos ecológicos en el mapa</a>
+      <a class="btn sec" href="donaciones.html">Apoyar la movilidad en bici</a>
+    </div>
+  </div>
+</main>
+<script src="nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+function calc(){
+  const s=Math.max(0,+$("km").value)*Math.min(7,Math.max(0,+$("dias").value))*+$("veh").value;
+  $("rSem").textContent=s.toLocaleString("es-CO",{maximumFractionDigits:1});
+  $("rAnio").textContent=Math.round(s*52).toLocaleString("es-CO");
+}
+["km","dias","veh"].forEach(i=>$(i).oninput=calc);calc();
+const cks=[...document.querySelectorAll(".lista input")];
+cks.forEach(c=>c.onchange=()=>{
+  const n=cks.filter(x=>x.checked).length;
+  $("prog").style.width=n/cks.length*100+"%";
+  $("listo").textContent=n===cks.length?"Todo listo. Buen viaje.":"";
+});
+</script>
+</body>
+</html>
