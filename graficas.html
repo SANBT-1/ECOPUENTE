@@ -6,47 +6,64 @@
 <title>EcoPuente | Datos estadísticos</title>
 <link rel="stylesheet" href="estilos.css">
 <style>
-.cv{height:260px;position:relative}
-.card h3{margin-top:0}
+.cv{height:240px;position:relative}
 .nota{color:var(--gris);font-size:14px;margin-top:10px}
+.enc{max-width:680px;margin:0 auto 26px}
+.enc .barra{height:8px;background:var(--menta);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.enc .barra i{display:block;height:100%;width:0;background:var(--hoja);transition:width .4s}
+.cuenta{color:var(--gris);font-size:14px}
+.enc h3{font-size:24px;margin:6px 0 10px}
+.op{display:block;width:100%;text-align:left;margin:8px 0;padding:14px 16px;border-radius:14px;border:2px solid var(--linea);background:#fff;cursor:pointer;font:500 16px 'DM Sans';transition:border-color .15s,background .15s}
+.op:hover{border-color:var(--hoja);background:var(--fondo)}
+#errEnc{color:#c0392b;font-size:14px;margin-top:8px}
+.res .cv{height:170px}
+.res h3{font-size:16px;font-family:'DM Sans',sans-serif;font-weight:700;color:var(--tinta)}
+.res small{color:var(--gris)}
 </style>
 </head>
 <body data-activo="datos">
 <main class="principal">
   <div class="wrap">
     <h1 style="font-size:42px;margin-bottom:8px">Datos estadísticos</h1>
-    <p class="sub">Las cifras de la sección Información, en gráficas. Pasa el cursor sobre cada barra para ver el valor.</p>
+    <p class="sub">Cifras del planeta y, más abajo, una encuesta hecha por quienes usan EcoPuente.</p>
 
     <div class="kpis">
-      <div class="kpi"><b>2.200 M</b><span>de personas sin agua potable segura</span></div>
-      <div class="kpi"><b>3.500 M</b><span>de personas sin saneamiento seguro</span></div>
-      <div class="kpi"><b>+11 M t</b><span>de plástico llegan al mar cada año</span></div>
+      <div class="kpi"><b>~1/3</b><span>de los alimentos que se producen se pierde o se desperdicia</span></div>
+      <div class="kpi"><b>~25 %</b><span>de las emisiones de CO₂ por energía vienen del transporte</span></div>
+      <div class="kpi"><b>71 %</b><span>de la superficie del planeta es océano</span></div>
+      <div class="kpi"><b>75 %</b><span>menos energía gasta un bombillo LED frente a uno incandescente (como mínimo)</span></div>
     </div>
 
     <div class="grid" style="margin-top:26px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
       <div class="card">
         <h3>Deforestación anual</h3>
         <div class="cv"><canvas id="g1" role="img" aria-label="Deforestación: 17,6 millones de hectáreas al año en los años noventa y 10,9 entre 2015 y 2025"></canvas></div>
-        <p class="nota">Millones de hectáreas por año. Bajó, pero sigue siendo alta.</p>
-      </div>
-      <div class="card">
-        <h3>Residuos del mundo</h3>
-        <div class="cv"><canvas id="g2" role="img" aria-label="Residuos: 2.560 millones de toneladas en 2022 y 3.860 proyectados para 2050"></canvas></div>
-        <p class="nota">Millones de toneladas. El dato de 2050 es una proyección si todo sigue igual.</p>
+        <p class="nota">Millones de hectáreas por año.</p>
       </div>
       <div class="card">
         <h3>Electricidad renovable</h3>
         <div class="cv"><canvas id="g3" role="img" aria-label="Renovables: 33 % en 2025 y 37 % proyectado en 2027"></canvas></div>
-        <p class="nota">Porcentaje de la electricidad mundial. El dato de 2027 es una proyección de la AIE.</p>
+        <p class="nota">Porcentaje de la electricidad mundial. 2027 es una proyección.</p>
       </div>
       <div class="card">
-        <h3>Bosques en la Tierra</h3>
-        <div class="cv"><canvas id="g4" role="img" aria-label="Los bosques cubren cerca del 32 % de la superficie terrestre"></canvas></div>
-        <p class="nota">Cerca del 32 % de la superficie terrestre.</p>
+        <h3>El agua del planeta</h3>
+        <div class="cv"><canvas id="g4" role="img" aria-label="Cerca del 97,5 % del agua es salada y 2,5 % es dulce"></canvas></div>
+        <p class="nota">Solo cerca del 2,5 % es agua dulce, y gran parte está en glaciares y aguas subterráneas.</p>
       </div>
     </div>
+
+    <h2 class="t">Encuesta EcoPuente</h2>
+    <p class="sub">Responde las 10 preguntas. Cada respuesta suma de inmediato a las gráficas de abajo, y tú ves lo que contestan los demás.</p>
+    <div class="card enc">
+      <div class="barra"><i id="prog"></i></div>
+      <div id="enc"></div>
+      <div id="errEnc"></div>
+    </div>
+
+    <h2 class="t" style="margin-top:10px">Resultados en vivo</h2>
+    <div class="grid res" id="resultados" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"></div>
   </div>
-  <footer>Datos tomados de la sección Información de EcoPuente.</footer>
+  <footer>Datos del planeta: cifras aproximadas de organismos internacionales. Encuesta: respuestas de usuarios de EcoPuente.</footer>
 </main>
 <script src="nav.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -54,12 +71,68 @@
 Chart.defaults.font.family="'DM Sans',sans-serif";
 Chart.defaults.color="#5b6b62";
 const $=id=>document.getElementById(id);
-const op=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString("es-CO")+" "+u}}},scales:{y:{beginAtZero:true,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}});
-const barras=(id,labels,data,u)=>new Chart($(id),{type:"bar",data:{labels,datasets:[{data,backgroundColor:["#95D5B2","#2D6A4F"],borderRadius:12}]},options:op(u)});
-barras("g1",["Años noventa","2015–2025"],[17.6,10.9],"M ha/año");
-barras("g2",["2022","2050 (proyección)"],[2560,3860],"M t");
-new Chart($("g3"),{type:"line",data:{labels:["2025","2027 (proyección)"],datasets:[{data:[33,37],borderColor:"#2D6A4F",backgroundColor:"rgba(82,183,136,.25)",fill:true,tension:.3,pointRadius:6,pointBackgroundColor:"#2D6A4F"}]},options:{...op("%"),scales:{y:{min:0,max:50,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}}});
-new Chart($("g4"),{type:"doughnut",data:{labels:["Bosques","Otras superficies"],datasets:[{data:[32,68],backgroundColor:["#2D6A4F","#D8F3DC"],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:"66%",plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>c.label+": "+c.parsed+" %"}}}}});
+const base=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString("es-CO")+" "+u}}},scales:{y:{beginAtZero:true,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}});
+new Chart($("g1"),{type:"bar",data:{labels:["Años noventa","2015–2025"],datasets:[{data:[17.6,10.9],backgroundColor:["#95D5B2","#2D6A4F"],borderRadius:12}]},options:base("M ha/año")});
+new Chart($("g3"),{type:"line",data:{labels:["2025","2027 (proyección)"],datasets:[{data:[33,37],borderColor:"#2D6A4F",backgroundColor:"rgba(82,183,136,.25)",fill:true,tension:.3,pointRadius:6,pointBackgroundColor:"#2D6A4F"}]},options:{...base("%"),scales:{y:{min:0,max:50,grid:{color:"#e6eee6"}},x:{grid:{display:false}}}}});
+new Chart($("g4"),{type:"doughnut",data:{labels:["Agua salada","Agua dulce"],datasets:[{data:[97.5,2.5],backgroundColor:["#95D5B2","#2D6A4F"],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:"62%",plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>c.label+": "+c.parsed+" %"}}}}});
+</script>
+<script type="module">
+import { db } from "./auth.js";
+import { doc, setDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const $ = id => document.getElementById(id);
+const P = [
+  ["¿Separas los residuos en casa?", ["Siempre", "A veces", "Nunca"]],
+  ["¿Cómo te mueves normalmente?", ["Caminando", "En bici", "Transporte público", "Moto o carro"]],
+  ["¿Cierras el grifo mientras te cepillas?", ["Siempre", "A veces", "Casi nunca"]],
+  ["¿Llevas tu propia bolsa cuando compras?", ["Siempre", "A veces", "Casi nunca"]],
+  ["¿Apagas luces y aparatos que no usas?", ["Siempre", "A veces", "Casi nunca"]],
+  ["¿Con qué frecuencia compras productos de un solo uso?", ["Casi nunca", "A veces", "Casi siempre"]],
+  ["¿Has sembrado un árbol?", ["Sí, varias veces", "Una vez", "Nunca"]],
+  ["¿Qué problema ambiental te preocupa más?", ["El agua", "La basura y el plástico", "El aire", "La pérdida de bosques"]],
+  ["¿Has donado o ayudado a una causa ambiental?", ["Sí", "No, pero me gustaría", "No"]],
+  ["¿Qué te motivaría más a cuidar el planeta?", ["Ahorrar dinero", "Proteger mi salud", "El futuro de mi familia", "Que sea fácil de hacer"]]
+];
+const REF = doc(db, "encuesta", "resultados");
+const KEY = "ecopuente_encuesta";
+let mis = {}; try { mis = JSON.parse(localStorage.getItem(KEY)) || {}; } catch {}
+const err = t => $("errEnc").textContent = t;
+
+// Gráficas de resultados (una por pregunta)
+$("resultados").innerHTML = P.map((p, i) => `<div class="card"><h3>${i + 1}. ${p[0]}</h3><div class="cv"><canvas id="c${i}"></canvas></div><small id="n${i}">0 respuestas</small></div>`).join("");
+const ch = P.map((p, i) => new Chart($("c" + i), {
+  type: "bar",
+  data: { labels: p[1], datasets: [{ data: p[1].map(() => 0), backgroundColor: ["#2D6A4F", "#52B788", "#95D5B2", "#c9e8d2"], borderRadius: 8 }] },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#e6eee6" } }, y: { grid: { display: false } } } }
+}));
+
+onSnapshot(REF, s => {
+  const d = s.data() || {};
+  P.forEach((p, i) => {
+    const c = p[1].map((_, j) => (d["q" + i] || {})[j] || 0);
+    ch[i].data.datasets[0].data = c; ch[i].update();
+    $("n" + i).textContent = c.reduce((a, b) => a + b, 0) + " respuestas";
+  });
+}, e => err("No se pudieron cargar los resultados (" + e.code + "). Revisa las reglas de Firestore."));
+
+// Preguntas una por una; cada respuesta se guarda al instante
+function ver() {
+  const i = P.findIndex((_, k) => mis[k] === undefined);
+  if (i < 0) { $("prog").style.width = "100%"; $("enc").innerHTML = "<h3>¡Gracias por responder!</h3><p>Tus respuestas ya cuentan en las gráficas de abajo.</p>"; return; }
+  $("prog").style.width = i * 10 + "%";
+  $("enc").innerHTML = `<span class="cuenta">Pregunta ${i + 1} de 10</span><h3>${P[i][0]}</h3>` +
+    P[i][1].map((x, j) => `<button class="op" data-j="${j}" type="button">${x}</button>`).join("");
+  $("enc").onclick = async e => {
+    const b = e.target.closest(".op"); if (!b) return;
+    const j = +b.dataset.j; $("enc").onclick = null; err("");
+    try { await setDoc(REF, { ["q" + i]: { [j]: increment(1) } }, { merge: true }); }
+    catch (x) { err("No se pudo guardar tu respuesta (" + x.code + ")."); ver(); return; }
+    mis[i] = j; try { localStorage.setItem(KEY, JSON.stringify(mis)); } catch {}
+    ver();
+  };
+}
+ver();
 </script>
 </body>
 </html>

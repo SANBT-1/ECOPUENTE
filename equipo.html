@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Equipo</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.principal{position:relative;overflow:hidden}
+.fondo{position:absolute;inset:0;pointer-events:none;z-index:0}
+.fondo span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:flota 14s ease-in-out infinite alternate}
+.fondo span:nth-child(1){width:380px;height:380px;background:#95D5B2;top:-80px;left:8%}
+.fondo span:nth-child(2){width:320px;height:320px;background:#D8F3DC;top:30%;right:-60px;animation-delay:-5s}
+.fondo span:nth-child(3){width:300px;height:300px;background:#F5EBDD;bottom:-60px;left:30%;animation-delay:-9s}
+@keyframes flota{to{transform:translate(60px,50px) scale(1.15)}}
+.wrap,.top{position:relative;z-index:1}
+.cab{text-align:center;margin-bottom:34px;animation:sube .7s both}
+.cab h1{font-size:clamp(36px,6vw,56px)}
+.cab p{color:var(--gris);max-width:520px;margin:8px auto 18px}
+#estado{text-align:center;color:var(--gris);padding:20px}
+.personas{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}
+.persona{animation:sube .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+@keyframes sube{from{opacity:0;transform:translateY(34px) scale(.95)}}
+.tar{background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-radius:28px;padding:30px 24px;text-align:center;box-shadow:var(--sombra);transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .15s,box-shadow .25s;height:100%}
+.tar:hover{box-shadow:0 20px 44px rgba(45,106,79,.25)}
+.aro{position:relative;width:150px;height:150px;margin:0 auto 18px}
+.aro::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--hoja),#B7E4C7,var(--bosque),var(--hoja));animation:gira 5s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.foto{position:absolute;inset:6px;border-radius:50%;overflow:hidden;background:var(--menta);display:grid;place-items:center;font:800 56px 'Bricolage Grotesque',sans-serif;color:var(--bosque)}
+.foto img{width:100%;height:100%;object-fit:cover}
+.tar h3{font-size:24px}
+.cargo{color:var(--hoja);font-weight:700;margin:4px 0 10px}
+.bio{color:var(--gris);font-size:15px}
+.yo{display:inline-block;margin-top:12px;font-size:12px;font-weight:700;color:var(--bosque);background:var(--menta);padding:3px 12px;border-radius:99px}
+dialog{border:0;border-radius:28px;padding:28px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(27,46,36,.55)}
+dialog h2{font-size:26px;margin-bottom:6px}
+dialog textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);border-radius:12px;font:inherit;resize:vertical}
+.prev{width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--menta);display:block;margin:8px 0}
+.acc{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+#msg{min-height:18px;font-size:14px;margin-top:8px;color:#c0392b}
+#msg.ok{color:var(--bosque)}
+</style>
+</head>
+<body data-activo="equipo">
+<main class="principal">
+  <div class="fondo"><span></span><span></span><span></span></div>
+  <div class="wrap">
+    <header class="cab">
+      <h1>Nuestro equipo</h1>
+      <p>Las personas que administran EcoPuente y cuidan que la información sea clara y útil.</p>
+      <button class="btn" id="miPerfil" type="button" hidden>Editar mi perfil</button>
+    </header>
+    <div id="estado">Cargando perfiles...</div>
+    <div class="personas" id="personas"></div>
+  </div>
+</main>
+
+<dialog id="dlg">
+  <h2>Mi perfil</h2>
+  <label for="fCargo">Cargo</label>
+  <input id="fCargo" maxlength="60" placeholder="Ej. Coordinadora de contenido">
+  <label for="fBio">Sobre mí</label>
+  <textarea id="fBio" rows="4" maxlength="280" placeholder="Cuéntanos en pocas palabras quién eres"></textarea>
+  <label for="fFoto">Foto de perfil</label>
+  <img class="prev" id="prev" alt="Vista previa" hidden>
+  <input id="fFoto" type="file" accept="image/*">
+  <div id="msg"></div>
+  <div class="acc">
+    <button class="btn sec" id="cancelar" type="button">Cancelar</button>
+    <button class="btn" id="guardar" type="button">Guardar</button>
+  </div>
+</dialog>
+
+<script src="nav.js"></script>
+<script type="module">
+import { auth, db, onAuthStateChanged, obtenerRol } from "./auth.js";
+import { collection, doc, getDoc, setDoc, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
+let yo = null, esAdmin = false, equipo = [], nuevaFoto = null;
+
+function pintar() {
+  $("estado").hidden = equipo.length > 0;
+  if (!equipo.length) $("estado").textContent = "Aún no hay perfiles. Aparecerán cuando los administradores inicien sesión.";
+  const orden = [...equipo].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+  $("personas").innerHTML = orden.map((p, i) => {
+    const foto = (p.foto || "").startsWith("data:image/") ? `<img src="${esc(p.foto)}" alt="Foto de ${esc(p.nombre)}">` : esc((p.nombre || "?")[0].toUpperCase());
+    return `<article class="persona" style="--d:${i * 110}ms"><div class="tar">
+      <div class="aro"><div class="foto">${foto}</div></div>
+      <h3>${esc(p.nombre)}</h3><div class="cargo">${esc(p.cargo || "Administrador")}</div>
+      <p class="bio">${esc(p.bio || "")}</p>${yo && p.id === yo.uid ? '<span class="yo">Tú</span>' : ""}</div></article>`;
+  }).join("");
+}
+
+// Efecto de inclinación al pasar el cursor
+$("personas").addEventListener("pointermove", e => {
+  const t = e.target.closest(".tar"); if (!t) return;
+  const r = t.getBoundingClientRect();
+  t.style.setProperty("--ry", ((e.clientX - r.left) / r.width - .5) * 12 + "deg");
+  t.style.setProperty("--rx", (.5 - (e.clientY - r.top) / r.height) * 12 + "deg");
+});
+$("personas").addEventListener("pointerout", e => {
+  const t = e.target.closest(".tar"); if (t) { t.style.setProperty("--rx", "0deg"); t.style.setProperty("--ry", "0deg"); }
+});
+
+onSnapshot(collection(db, "equipo"),
+  s => { equipo = s.docs.map(d => ({ id: d.id, ...d.data() })); pintar(); },
+  e => { $("estado").textContent = "No se pudieron cargar los perfiles (" + e.code + "). Revisa las reglas de Firestore."; });
+
+onAuthStateChanged(auth, async u => {
+  yo = u; esAdmin = false;
+  if (u) try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch {}
+  $("miPerfil").hidden = !esAdmin;
+  if (esAdmin) try {   // primera vez: crea la tarjeta del administrador
+    const r = doc(db, "equipo", u.uid);
+    if (!(await getDoc(r)).exists()) await setDoc(r, { nombre: u.displayName || u.email, cargo: "Administrador", bio: "", foto: "" });
+  } catch {}
+  pintar();
+});
+
+// Reduce la foto a un cuadrado de 320 px para guardarla en Firestore
+const reducir = file => new Promise((ok, no) => {
+  const im = new Image();
+  im.onload = () => {
+    const c = document.createElement("canvas"); c.width = c.height = 320;
+    const m = Math.min(im.width, im.height);
+    c.getContext("2d").drawImage(im, (im.width - m) / 2, (im.height - m) / 2, m, m, 0, 0, 320, 320);
+    URL.revokeObjectURL(im.src); ok(c.toDataURL("image/jpeg", .82));
+  };
+  im.onerror = no; im.src = URL.createObjectURL(file);
+});
+
+$("miPerfil").onclick = async () => {
+  const mio = equipo.find(p => p.id === yo.uid) || {};
+  $("fCargo").value = mio.cargo || ""; $("fBio").value = mio.bio || "";
+  nuevaFoto = null; $("fFoto").value = ""; $("msg").textContent = ""; $("msg").className = "";
+  $("prev").hidden = !mio.foto; if (mio.foto) $("prev").src = mio.foto;
+  $("dlg").showModal();
+};
+$("fFoto").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { nuevaFoto = await reducir(f); $("prev").src = nuevaFoto; $("prev").hidden = false; }
+  catch { $("msg").textContent = "No se pudo leer esa imagen."; }
+};
+$("cancelar").onclick = () => $("dlg").close();
+$("guardar").onclick = async () => {
+  if (!esAdmin) return;
+  const mio = equipo.find(p => p.id === yo.uid) || {};
+  const dato = { nombre: mio.nombre || yo.displayName || yo.email, cargo: $("fCargo").value.trim() || "Administrador", bio: $("fBio").value.trim(), foto: nuevaFoto ?? mio.foto ?? "" };
+  try {
+    await setDoc(doc(db, "equipo", yo.uid), dato, { merge: true });
+    $("msg").className = "ok"; $("msg").textContent = "Perfil guardado.";
+    setTimeout(() => $("dlg").close(), 700);
+  } catch (e) { $("msg").className = ""; $("msg").textContent = "No se pudo guardar (" + e.code + ")."; }
+};
+</script>
+</body>
+</html>

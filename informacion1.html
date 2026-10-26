@@ -6,51 +6,55 @@
 <title>EcoPuente | Información</title>
 <link rel="stylesheet" href="estilos.css">
 <style>
-.dos{display:grid;grid-template-columns:1fr 1.2fr;gap:34px;align-items:center;margin-top:40px}
-.dos h3{font-size:28px;margin-bottom:12px}
-.dos p{margin-bottom:12px}
-.carrusel{position:relative;overflow:hidden;border-radius:28px 28px 8px 28px;box-shadow:var(--sombra);background:#fff}
+.card .foto{width:100%;height:170px;object-fit:cover;border-radius:16px;margin-bottom:6px}
+.dos{display:grid;grid-template-columns:1fr 1.2fr;gap:34px;align-items:center;margin-top:44px}
+.dos h2{font-size:30px;margin-bottom:10px}
+.carrusel{position:relative;overflow:hidden;border-radius:28px;box-shadow:var(--sombra);background:#fff}
 .pistas{display:flex;transition:transform .6s ease}
-.pistas img{min-width:100%;height:320px;object-fit:cover}
+.pistas img{min-width:100%;height:300px;object-fit:cover}
 .bc{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.9);border:0;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer;color:var(--bosque)}
 .ant{left:10px}.sig{right:10px}
 .puntos{position:absolute;bottom:12px;width:100%;display:flex;justify-content:center;gap:8px}
 .punto{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.55);border:0;cursor:pointer}
 .punto.activo{background:#fff;transform:scale(1.25)}
-.ayuda{background:var(--crema);margin-top:50px;padding:46px 0}
-.ayuda .card{border-left:6px solid var(--hoja);border-radius:8px 22px 22px 8px}
+.caneca{border-top:10px solid var(--c)}
+.caneca b{color:var(--c)}
+.tres r{display:block}
+.rs .card{background:var(--crema);box-shadow:none}
+details{background:#fff;border-radius:16px;padding:14px 18px;margin-bottom:10px;box-shadow:var(--sombra)}
+summary{cursor:pointer;font-weight:700;color:var(--bosque)}
+details p{margin-top:8px;color:var(--gris)}
 @media(max-width:850px){.dos{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-activo="informacion">
 <main class="principal">
   <div class="wrap">
-    <h1 class="t" style="margin-top:0;font-size:42px">Conoce EcoPuente</h1>
-    <p class="sub">Algunos ejemplos de lo que protegemos y de por qué cuidarlos es urgente.</p>
+    <h1 style="font-size:42px;margin-bottom:6px">Información</h1>
+    <p class="sub">Lo esencial para entender el estado del planeta y qué puedes hacer.</p>
 
     <div class="grid">
       <article class="card">
-        <img class="im" style="object-fit:cover;padding:0" src="imagene/Bosque.jfif" alt="Bosques">
+        <img class="foto" src="imagene/Bosque.jfif" alt="Bosques">
         <h3>Bosques</h3>
-        <p>Los pulmones de la Tierra que debemos conservar: cubren cerca del 32 % de la superficie terrestre, unas 0,5 hectáreas por persona. La deforestación bajó de 17,6 millones de hectáreas al año en los años noventa a 10,9 millones entre 2015 y 2025, aunque sigue siendo una cifra alta. Los bosques primarios ocupan al menos 1.180 millones de hectáreas.</p>
+        <p>Cubren cerca del 32 % de la superficie terrestre. La deforestación bajó de 17,6 a 10,9 millones de hectáreas al año, pero sigue siendo alta.</p>
       </article>
       <article class="card">
-        <img class="im" style="object-fit:cover;padding:0" src="imagene/Lago.jfif" alt="Lagos">
+        <img class="foto" src="imagene/Lago.jfif" alt="Lagos">
         <h3>Agua</h3>
-        <p>Un recurso vital que cuidamos entre todos; 2.200 millones de personas aún carecen de agua potable segura y 3.500 millones no tienen saneamiento seguro. Además, se prevé que la demanda de agua dulce crezca más del 40 % hacia 2050. De los 153 países que comparten recursos hídricos, solo 24 tienen acuerdos que cubren todas sus aguas compartidas.</p>
+        <p>2.200 millones de personas no tienen agua potable segura, y la demanda de agua dulce crecerá más del 40 % hacia 2050.</p>
       </article>
       <article class="card">
-        <img class="im" style="object-fit:cover;padding:0" src="imagene/Turbinas.jfif" alt="Turbinas">
+        <img class="foto" src="imagene/Turbinas.jfif" alt="Turbinas">
         <h3>Energía limpia</h3>
-        <p>Fuentes renovables para un futuro sostenible; ya aportan cerca de un tercio de la electricidad mundial, y la energía solar es la que más crece. La AIE proyecta que las renovables superen al carbón como principal fuente de electricidad en 2026 y que su participación pase del 33 % en 2025 al 37 % en 2027.</p>
+        <p>Las renovables ya aportan cerca de un tercio de la electricidad mundial y podrían llegar al 37 % en 2027, según la AIE.</p>
       </article>
     </div>
 
     <div class="dos">
       <div>
-        <h3>¿Qué es EcoPuente?</h3>
-        <p>EcoPuente es un proyecto que conecta a las personas con acciones sencillas y reales para proteger la naturaleza, y que funciona como un puente entre los datos científicos y las decisiones cotidianas.</p>
-        <p>Creemos que los pequeños cambios de cada día, sumados, construyen un planeta más limpio y saludable para todos. Los residuos, por ejemplo, pasarían de 2.560 millones de toneladas en 2022 a 3.860 millones en 2050 si seguimos igual, pero con prevención y reciclaje ese aumento puede reducirse.</p>
+        <h2>¿Qué es EcoPuente?</h2>
+        <p>Un puente entre los datos científicos y las decisiones de cada día. Creemos que los pequeños cambios, sumados, construyen un planeta más limpio para todos.</p>
       </div>
       <div class="carrusel">
         <div class="pistas" id="pistas">
@@ -64,23 +68,36 @@
         <div class="puntos" id="puntos"></div>
       </div>
     </div>
-  </div>
 
-  <section class="ayuda">
-    <div class="wrap" style="padding-bottom:0">
-      <h2 style="font-size:34px">Ayuda</h2>
-      <p class="sub">Formas sencillas de ayudar al medio ambiente desde tu casa, con datos que muestran por qué importan.</p>
-      <div class="grid">
-        <article class="card"><h3>Recicla</h3><p>Separa papel, plástico, vidrio y orgánicos para que puedan reutilizarse.</p></article>
-        <article class="card"><h3>Ahorra agua</h3><p>Cierra el grifo al cepillarte, toma duchas cortas y repara las fugas; cerca de la mitad de la población mundial sufre escasez severa de agua.</p></article>
-        <article class="card"><h3>Ahorra energía</h3><p>Apaga luces y desconecta aparatos que no uses; prefiere bombillos LED. Cada ahorro permite que la energía renovable, que ya aporta un tercio de la electricidad mundial, cubra una parte mayor de la demanda.</p></article>
-        <article class="card"><h3>Transporte sostenible</h3><p>Camina, usa la bicicleta o el transporte público siempre que puedas; esto reduce las emisiones de gases de efecto invernadero y mejora la calidad del aire.</p></article>
-        <article class="card"><h3>Siembra árboles</h3><p>Planta y cuida árboles: limpian el aire y dan hogar a la fauna; cerca de una quinta parte de los bosques ya está en áreas protegidas, y tú puedes sumar plantando especies nativas de tu región.</p></article>
-        <article class="card"><h3>Consume responsablemente</h3><p>Lleva tu bolsa reutilizable, evita los plásticos de un solo uso y compra solo lo necesario; más de 11 millones de toneladas de plástico llegan al mar cada año, y cerca del 65 % del plástico de los residuos urbanos es de un solo uso.</p></article>
-      </div>
+    <h2 class="t">¿En qué caneca va cada residuo?</h2>
+    <p class="sub">En Colombia se separa con tres colores.</p>
+    <div class="grid">
+      <div class="card caneca" style="--c:#6b7a74"><h3><b>Blanca</b></h3><p>Aprovechables y limpios: plástico, vidrio, papel, cartón y metales.</p></div>
+      <div class="card caneca" style="--c:#222"><h3><b>Negra</b></h3><p>No aprovechables: papel higiénico, servilletas y empaques sucios de grasa.</p></div>
+      <div class="card caneca" style="--c:#2D6A4F"><h3><b>Verde</b></h3><p>Orgánicos: restos de comida, cáscaras y residuos de jardín.</p></div>
     </div>
-  </section>
-  <footer>© 2026 EcoPuente · Cuidemos juntos el planeta</footer>
+
+    <h2 class="t">Las tres R</h2>
+    <div class="grid rs">
+      <div class="card"><h3>Reducir</h3><p>Compra solo lo necesario y evita lo desechable. Es la R que más pesa.</p></div>
+      <div class="card"><h3>Reutilizar</h3><p>Dale otra vida a frascos, bolsas y ropa antes de botarlos.</p></div>
+      <div class="card"><h3>Reciclar</h3><p>Separa bien y entrega limpio lo que sí se puede aprovechar.</p></div>
+    </div>
+
+    <h2 class="t">Colombia, un país megadiverso</h2>
+    <div class="card" style="background:var(--menta);box-shadow:none">
+      <p style="color:var(--tinta)">Los Andes, la Amazonía, el Pacífico, el Caribe y la Orinoquía reúnen una variedad enorme de especies. Cuidar sus bosques, ríos y páramos protege el agua que llega a nuestras ciudades. Conoce a las fundaciones que lo hacen en <a href="donaciones.html" style="color:var(--bosque);font-weight:700">Donaciones</a>.</p>
+    </div>
+
+    <h2 class="t">Cómo ayudar desde hoy</h2>
+    <details><summary>Ahorra agua</summary><p>Cierra el grifo al cepillarte, toma duchas cortas y repara las fugas.</p></details>
+    <details><summary>Ahorra energía</summary><p>Apaga luces, desconecta lo que no uses y cambia a bombillos LED.</p></details>
+    <details><summary>Muévete mejor</summary><p>Camina, usa la bici o el transporte público. Menos emisiones y aire más limpio.</p></details>
+    <details><summary>Siembra árboles</summary><p>Prefiere especies nativas de tu región. Limpian el aire y dan hogar a la fauna.</p></details>
+    <details><summary>Consume con cabeza</summary><p>Lleva tu bolsa y tu botella. Más de 11 millones de toneladas de plástico llegan al mar cada año.</p></details>
+    <details><summary>Cuida tu comida</summary><p>Planea las compras y aprovecha las sobras. Lo que no se desperdicia no se convierte en basura.</p></details>
+  </div>
+  <footer>© 2026 EcoPuente</footer>
 </main>
 <script src="nav.js"></script>
 <script>

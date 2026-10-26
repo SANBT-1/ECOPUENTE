@@ -179,29 +179,35 @@ function pintarOSM(els) {
   estado(total ? `${total} puntos en esta zona` : "No hay puntos registrados en esta zona. Prueba otra área.");
 }
 
+// Consulta a los dos servidores a la vez y usa el que responda primero
 async function overpass(q) {
-  for (const u of ENDPOINTS) try {
-    const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) });
-    if (r.ok) return await r.json();
-  } catch {}
-  throw 0;
+  const cs = ENDPOINTS.map(() => new AbortController());
+  return Promise.any(ENDPOINTS.map((u, i) =>
+    fetch(u, { method: "POST", signal: cs[i].signal, headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) })
+      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(j => { cs.forEach((c, k) => k !== i && c.abort()); return j; })));
 }
 
+const cache = new Map();
 async function cargar() {
-  if (map.getZoom() < 12) return estado("Acerca el mapa para ver los puntos.");
-  const b = map.getBounds(), bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(",");
-  const q = `[out:json][timeout:25];(nwr["amenity"~"^(recycling|bicycle_rental|charging_station)$"](${bb});nwr["leisure"="park"]["name"](${bb}););out center 400;`;
+  if (map.getZoom() < 13) return estado("Acerca el mapa para ver los puntos.");
+  const b = map.getBounds(), bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map(n => n.toFixed(3)).join(",");
+  if (cache.has(bb)) { $("mpZona").hidden = true; return pintarOSM(cache.get(bb)); }
+  const q = `[out:json][timeout:12];(node["amenity"~"^(recycling|bicycle_rental|charging_station)$"](${bb});way["leisure"="park"]["name"](${bb}););out center 250 qt;`;
   const id = ++pedido;
   $("mpZona").hidden = true; estado("Buscando puntos ecológicos...");
   try {
     const r = await overpass(q);
+    cache.set(bb, r.elements);
     if (id === pedido) pintarOSM(r.elements);
   } catch {
     if (id !== pedido) return;
-    estado("No se pudo cargar. Intenta de nuevo en unos segundos."); $("mpZona").hidden = false;
+    estado("No se pudo cargar. Intenta de nuevo."); $("mpZona").textContent = "Reintentar"; $("mpZona").hidden = false;
   }
 }
-map.on("moveend", () => { if (auto) { auto = false; cargar(); } else $("mpZona").hidden = false; });
+// Al mover el mapa, carga solo (sin botón) después de una pausa corta
+let tm;
+map.on("moveend", () => { clearTimeout(tm); tm = setTimeout(cargar, 350); });
 $("mpZona").onclick = cargar;
 
 async function geocodificar(q) {
