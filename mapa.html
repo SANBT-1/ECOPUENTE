@@ -1,0 +1,11 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mapa · EcoPuente</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><main><h1>Mapa ecológico</h1><p class="mut">Puntos ecológicos del mundo. Los administradores agregan puntos haciendo clic en el mapa.</p><div id="map"></div>
+<h2>Sugiere un lugar</h2><div class="box"><label for="n">Nombre</label><input id="n"><label for="q">Qué hacen</label><textarea id="q" rows="2"></textarea><label for="d">Dirección</label><input id="d"><p></p><button class="btn p" id="s">Enviar sugerencia</button> <span id="m"></span></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script type="module">import{db}from"./auth.js";import{collection,addDoc,getDocs,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const map=L.map("map").setView([6.25,-75.57],3);L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+const add=p=>L.marker([p.lat,p.lng]).addTo(map).bindPopup("<b>"+p.nombre+"</b><br>"+(p.descripcion||""));
+try{(await getDocs(collection(db,"puntos"))).forEach(d=>add(d.data()))}catch(e){}
+let admin=false;addEventListener("eco-user",ev=>admin=ev.detail.rol==="administrador");
+map.on("click",async e=>{if(!admin)return;const nombre=prompt("Nombre del punto ecológico");if(!nombre)return;const descripcion=prompt("Descripción")||"";const p={nombre,descripcion,lat:e.latlng.lat,lng:e.latlng.lng};await addDoc(collection(db,"puntos"),p);add(p)});
+s.onclick=async()=>{if(!n.value||!d.value){m.textContent="Escribe el nombre y la dirección.";return}try{await addDoc(collection(db,"sugerencias"),{nombre:n.value,hacen:q.value,direccion:d.value,fecha:serverTimestamp()});m.textContent="Sugerencia enviada. Gracias.";n.value=q.value=d.value=""}catch(x){m.textContent="No se pudo enviar: "+x.message}}</script>
+<script type="module" src="layout.js"></script></body></html>
