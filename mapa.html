@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPuente | Mapa ecológico</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="estilos.css">
+<style>
+.principal{display:flex;flex-direction:column;height:100vh;min-height:0}
+.top{padding:10px 16px;gap:10px;flex:none}
+.top h1{flex:1;font-size:24px;white-space:nowrap}
+#mapwrap{position:relative;flex:1;min-height:0;overflow:hidden}
+#map{position:absolute;inset:0;z-index:0}
+.mp-panel{position:absolute;top:12px;left:12px;z-index:10;width:min(460px,calc(100% - 24px))}
+.mp-buscar{display:flex;gap:6px;background:#fff;border-radius:999px;padding:6px;box-shadow:var(--sombra)}
+.mp-buscar input{flex:1;min-width:0;border:0;outline:0;padding:8px 12px;font-size:15px;background:none}
+.mp-buscar .btn,.mp-zona{padding:8px 16px;font-size:14px}
+.mp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mp-chip{border:0;border-radius:999px;padding:7px 14px;font:500 13px 'DM Sans';cursor:pointer;background:#fff;box-shadow:0 2px 8px rgba(27,46,36,.18);display:flex;align-items:center;gap:6px}
+.mp-chip i{width:11px;height:11px;border-radius:50%}
+.mp-chip.off{opacity:.55;text-decoration:line-through}
+.mp-zona{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;box-shadow:var(--sombra)}
+.mp-estado{position:absolute;left:12px;bottom:12px;z-index:10;background:rgba(255,255,255,.96);padding:6px 14px;border-radius:14px;font-size:13px;box-shadow:var(--sombra);max-width:70%}
+.mp-del{margin-top:6px;background:#c0392b;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+@media(max-width:800px){.mp-zona{top:auto;bottom:52px}.top h1{font-size:18px}}
+.modal{position:fixed;inset:0;background:rgba(27,46,36,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:15px}
+.modal.on{display:flex}
+.modal-c{background:#fff;border-radius:28px 28px 28px 8px;padding:26px;width:440px;max-width:100%;max-height:92vh;overflow:auto}
+.modal-c h2{margin-bottom:8px;font-size:26px}
+.modal-c textarea{width:100%;padding:12px 14px;margin-top:4px;border:1px solid var(--linea);border-radius:12px;font:inherit}
+.modal-c input{margin-top:4px}
+.acc{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+#fMsg{margin-top:10px;font-size:14px;min-height:18px;color:#c0392b}
+#fMsg.ok{color:var(--bosque)}
+#drawer{position:absolute;top:0;right:0;bottom:0;width:380px;max-width:100%;background:#fff;z-index:20;box-shadow:-4px 0 18px rgba(27,46,36,.22);transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+#drawer.on{transform:none}
+#drawer header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--bosque);color:#fff}
+#drawer header button{background:none;border:0;color:#fff;font-size:24px;cursor:pointer}
+#lista{overflow:auto;padding:12px}
+.sug-card{border:1px solid var(--linea);border-radius:16px;padding:14px;margin-bottom:12px}
+.sug-card h3{margin:0 0 6px;font-size:18px}
+.sug-card p{margin:4px 0;font-size:14px}
+.sug-card small{color:var(--gris)}
+#barra{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:25;background:#fff;border-radius:18px;padding:12px 16px;box-shadow:var(--sombra);display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:95%}
+</style>
+</head>
+<body data-activo="mapa">
+<main class="principal">
+  <div id="mapwrap">
+    <div id="map"></div>
+
+    <div class="mp-panel">
+      <div class="mp-buscar">
+        <input id="mpQ" type="text" placeholder="Buscar una ciudad o dirección..." aria-label="Buscar">
+        <button class="btn" id="mpGo" type="button">Buscar</button>
+        <button class="btn sec" id="mpLoc" type="button">Cerca de mí</button>
+      </div>
+      <div class="mp-chips" id="mpChips"></div>
+    </div>
+    <button id="mpZona" class="btn mp-zona" type="button" hidden>Buscar en esta zona</button>
+    <div id="mpEstado" class="mp-estado">Cargando mapa...</div>
+
+    <aside id="drawer">
+      <header><b>Sugerencias pendientes</b><button id="dCerrar" type="button" aria-label="Cerrar">×</button></header>
+      <div id="lista"></div>
+    </aside>
+
+    <div id="barra" hidden>
+      <span id="barraTxt"></span>
+      <button class="btn" id="bPublicar" type="button">Publicar en el mapa</button>
+      <button class="btn sec" id="bCancelar" type="button">Cancelar</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="modal">
+  <div class="modal-c">
+    <h2>Sugerir un lugar ecológico</h2>
+    <div id="formBox">
+      <label>Lugar<input id="fNombre" maxlength="100" placeholder="Nombre del lugar"></label>
+      <label>Descripción del lugar<textarea id="fDesc" maxlength="500" rows="4" placeholder="¿Qué hacen o qué se puede hacer allí?"></textarea></label>
+      <label>Dirección del lugar<input id="fDir" maxlength="200" placeholder="Calle, barrio, ciudad"></label>
+      <div id="fMsg"></div>
+      <div class="acc">
+        <button class="btn sec" id="fCerrar" type="button">Cerrar</button>
+        <button class="btn" id="fEnviar" type="button">Enviar sugerencia</button>
+      </div>
+    </div>
+    <div id="loginBox" hidden>
+      <p>Para sugerir un lugar tienes que iniciar sesión.</p>
+      <div class="acc">
+        <button class="btn sec" id="lCerrar" type="button">Cerrar</button>
+        <a class="btn" href="inicia-sesion.html">Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="nav.js"></script>
+<script type="module">
+import { auth, db, onAuthStateChanged, obtenerRol } from "./auth.js";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
+const estado = t => $("mpEstado").textContent = t;
+const ruta = (lat, lon) => `<a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">Cómo llegar</a>`;
+
+// Título y botones de sugerencias en la barra superior
+$("menuBtn").insertAdjacentHTML("afterend", "<h1>Mapa ecológico</h1>");
+$("btnSesion").insertAdjacentHTML("beforebegin",
+  '<button class="btn sec" id="btnSugerir" type="button">Sugerir un lugar</button><button class="btn" id="btnSug" type="button" hidden>Sugerencias (0)</button>');
+
+const CATS = {
+  reciclaje:  { n: "Reciclaje",           c: "#27ae60", osm: t => t.amenity === "recycling" },
+  bicicletas: { n: "Bicicletas públicas", c: "#3498db", osm: t => t.amenity === "bicycle_rental" },
+  carga:      { n: "Carga eléctrica",     c: "#f39c12", osm: t => t.amenity === "charging_station" },
+  parques:    { n: "Parques",             c: "#795548", osm: t => t.leisure === "park" },
+  lugares:    { n: "Lugares EcoPuente",   c: "#e91e63" }
+};
+const KEYS = Object.keys(CATS), OSM_KEYS = KEYS.filter(k => CATS[k].osm);
+const MAT = { glass: "vidrio", glass_bottles: "botellas de vidrio", paper: "papel", cardboard: "cartón", plastic: "plástico",
+  plastic_bottles: "botellas plásticas", cans: "latas", batteries: "pilas", clothes: "ropa", scrap_metal: "metal", electrical_items: "electrónicos" };
+const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+
+let user, esAdmin = false, auto = false, usuarioPin, pedido = 0, lugares = [], pendientes = [], pend, marcador;
+const grupos = {}, conteo = {};
+
+const map = L.map("map", { zoomControl: false, preferCanvas: true }).setView([6.2442, -75.5812], 13);
+L.control.zoom({ position: "bottomright" }).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+// Reacomoda el mapa cuando se abre o se cierra el menú lateral
+new ResizeObserver(() => map.invalidateSize()).observe($("map"));
+
+KEYS.forEach(k => {
+  grupos[k] = L.layerGroup().addTo(map); conteo[k] = 0;
+  const b = document.createElement("button");
+  b.className = "mp-chip"; b.type = "button"; b.id = "chip-" + k;
+  b.onclick = () => {
+    const on = map.hasLayer(grupos[k]);
+    on ? map.removeLayer(grupos[k]) : map.addLayer(grupos[k]);
+    b.classList.toggle("off", on);
+  };
+  $("mpChips").append(b);
+});
+const chips = () => KEYS.forEach(k => $("chip-" + k).innerHTML = `<i style="background:${CATS[k].c}"></i>${CATS[k].n} (${conteo[k]})`);
+chips();
+
+function detalle(k, t) {
+  if (k === "reciclaje") {
+    const m = Object.keys(t).filter(x => x.startsWith("recycling:") && t[x] === "yes").map(x => MAT[x.slice(10)] || x.slice(10).replace(/_/g, " "));
+    return m.length ? "Acepta: " + m.join(", ") : "";
+  }
+  const p = [];
+  if (t.operator || t.network) p.push(t.operator || t.network);
+  if (t.capacity) p.push("Capacidad: " + t.capacity);
+  return p.join(" · ");
+}
+
+function pintarOSM(els) {
+  OSM_KEYS.forEach(k => { grupos[k].clearLayers(); conteo[k] = 0; });
+  els.forEach(e => {
+    const t = e.tags || {}, lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
+    const k = OSM_KEYS.find(x => CATS[x].osm(t));
+    if (!k || lat == null || lon == null) return;
+    conteo[k]++;
+    const d = detalle(k, t);
+    L.circleMarker([lat, lon], { radius: 8, color: "#fff", weight: 2, fillColor: CATS[k].c, fillOpacity: .95 })
+      .bindPopup(`<b>${esc(t.name || CATS[k].n)}</b><br><span style="color:${CATS[k].c}">${CATS[k].n}</span>${d ? "<br>" + esc(d) : ""}<br>${ruta(lat, lon)}`)
+      .addTo(grupos[k]);
+  });
+  chips();
+  const total = KEYS.reduce((s, k) => s + conteo[k], 0);
+  estado(total ? `${total} puntos en esta zona` : "No hay puntos registrados en esta zona. Prueba otra área.");
+}
+
+async function overpass(q) {
+  for (const u of ENDPOINTS) try {
+    const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(q) });
+    if (r.ok) return await r.json();
+  } catch {}
+  throw 0;
+}
+
+async function cargar() {
+  if (map.getZoom() < 12) return estado("Acerca el mapa para ver los puntos.");
+  const b = map.getBounds(), bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(",");
+  const q = `[out:json][timeout:25];(nwr["amenity"~"^(recycling|bicycle_rental|charging_station)$"](${bb});nwr["leisure"="park"]["name"](${bb}););out center 400;`;
+  const id = ++pedido;
+  $("mpZona").hidden = true; estado("Buscando puntos ecológicos...");
+  try {
+    const r = await overpass(q);
+    if (id === pedido) pintarOSM(r.elements);
+  } catch {
+    if (id !== pedido) return;
+    estado("No se pudo cargar. Intenta de nuevo en unos segundos."); $("mpZona").hidden = false;
+  }
+}
+map.on("moveend", () => { if (auto) { auto = false; cargar(); } else $("mpZona").hidden = false; });
+$("mpZona").onclick = cargar;
+
+async function geocodificar(q) {
+  const j = await (await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(q))).json();
+  return j.length ? [+j[0].lat, +j[0].lon] : null;
+}
+async function buscarLugar() {
+  const q = $("mpQ").value.trim(); if (!q) return;
+  estado("Buscando lugar...");
+  try {
+    const ll = await geocodificar(q);
+    if (!ll) return estado("No encontré ese lugar.");
+    auto = true; map.flyTo(ll, 15);
+  } catch { estado("No se pudo buscar el lugar."); }
+}
+$("mpGo").onclick = buscarLugar;
+$("mpQ").onkeydown = e => e.key === "Enter" && buscarLugar();
+$("mpLoc").onclick = () => {
+  if (!navigator.geolocation) return estado("Tu navegador no permite ubicación.");
+  estado("Obteniendo tu ubicación...");
+  navigator.geolocation.getCurrentPosition(p => {
+    const ll = [p.coords.latitude, p.coords.longitude];
+    if (usuarioPin) map.removeLayer(usuarioPin);
+    usuarioPin = L.circleMarker(ll, { radius: 9, color: "#fff", weight: 3, fillColor: "#1a73e8", fillOpacity: 1 }).addTo(map).bindPopup("Estás aquí");
+    auto = true; map.flyTo(ll, 15);
+  }, () => estado("No pude obtener tu ubicación. Revisa el permiso del navegador."), { enableHighAccuracy: true, timeout: 10000 });
+};
+
+function pintarLugares() {
+  grupos.lugares.clearLayers(); conteo.lugares = lugares.length;
+  lugares.forEach(l => {
+    const h = `<b>${esc(l.nombre)}</b><br><span style="color:${CATS.lugares.c}">Lugar EcoPuente</span><br>${esc(l.descripcion)}<br><small>${esc(l.direccion)}</small><br>${ruta(l.lat, l.lon)}` +
+      (esAdmin ? `<br><button class="mp-del" data-id="${esc(l.id)}">Quitar del mapa</button>` : "");
+    L.circleMarker([l.lat, l.lon], { radius: 10, color: "#fff", weight: 2, fillColor: CATS.lugares.c, fillOpacity: 1 }).bindPopup(h).addTo(grupos.lugares);
+  });
+  chips();
+}
+async function cargarLugares() {
+  try {
+    lugares = (await getDocs(collection(db, "lugares"))).docs.map(d => ({ id: d.id, ...d.data() }));
+    pintarLugares();
+  } catch (e) { console.warn("lugares:", e.code); }
+}
+map.on("popupopen", e => {
+  const b = e.popup.getElement().querySelector(".mp-del");
+  if (b) b.onclick = async () => {
+    if (!confirm("¿Quitar este lugar del mapa?")) return;
+    try {
+      await deleteDoc(doc(db, "lugares", b.dataset.id));
+      lugares = lugares.filter(l => l.id !== b.dataset.id); map.closePopup(); pintarLugares();
+    } catch (err) { alert("No se pudo quitar: " + err.code); }
+  };
+});
+
+$("btnSugerir").onclick = () => {
+  $("modal").classList.add("on");
+  $("formBox").hidden = !user;
+  $("loginBox").hidden = !!user;
+  $("fMsg").textContent = ""; $("fMsg").className = "";
+};
+const cerrarModal = () => $("modal").classList.remove("on");
+$("fCerrar").onclick = $("lCerrar").onclick = cerrarModal;
+
+$("fEnviar").onclick = async () => {
+  const nombre = $("fNombre").value.trim(), descripcion = $("fDesc").value.trim(), direccion = $("fDir").value.trim(), msg = $("fMsg");
+  msg.className = "";
+  if (!nombre || !descripcion || !direccion) return msg.textContent = "Completa el lugar, la descripción y la dirección.";
+  try {
+    await addDoc(collection(db, "sugerencias"), {
+      uid: user.uid, autor: user.displayName || "", email: user.email || "",
+      nombre, descripcion, direccion, estado: "pendiente", creado: serverTimestamp()
+    });
+    $("fNombre").value = $("fDesc").value = $("fDir").value = "";
+    msg.className = "ok"; msg.textContent = "¡Listo! Tu sugerencia fue enviada a los administradores.";
+  } catch (e) { msg.textContent = "No se pudo enviar: " + e.code; }
+};
+
+async function cargarPendientes() {
+  if (!esAdmin) return;
+  try {
+    pendientes = (await getDocs(query(collection(db, "sugerencias"), where("estado", "==", "pendiente")))).docs.map(d => ({ id: d.id, ...d.data() }));
+    $("btnSug").textContent = `Sugerencias (${pendientes.length})`;
+    $("lista").innerHTML = pendientes.length ? pendientes.map((s, i) => `
+      <div class="sug-card">
+        <h3>${esc(s.nombre)}</h3>
+        <p>${esc(s.descripcion)}</p>
+        <p><b>Dirección:</b> ${esc(s.direccion)}</p>
+        <small>Sugerido por ${esc(s.autor || s.email || "un usuario")}</small>
+        <div class="acc">
+          <button class="btn sec" data-a="r" data-i="${i}" type="button">Rechazar</button>
+          <button class="btn" data-a="u" data-i="${i}" type="button">Ubicar en el mapa</button>
+        </div>
+      </div>`).join("") : '<p style="text-align:center;color:#777">No hay sugerencias pendientes.</p>';
+  } catch (e) { $("btnSug").textContent = "Sugerencias (error)"; console.warn("sugerencias:", e.code); }
+}
+$("lista").onclick = e => {
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const s = pendientes[+b.dataset.i];
+  b.dataset.a === "u" ? colocar(s) : rechazar(s);
+};
+$("btnSug").onclick = () => $("drawer").classList.toggle("on");
+$("dCerrar").onclick = () => $("drawer").classList.remove("on");
+
+async function rechazar(s) {
+  if (!confirm(`¿Rechazar la sugerencia "${s.nombre}"?`)) return;
+  try { await updateDoc(doc(db, "sugerencias", s.id), { estado: "rechazada" }); cargarPendientes(); }
+  catch (e) { alert("No se pudo rechazar: " + e.code); }
+}
+
+async function colocar(s) {
+  $("drawer").classList.remove("on");
+  pend = s; estado("Buscando la dirección en el mapa...");
+  let ll = null;
+  try { ll = await geocodificar(s.direccion); } catch {}
+  if (marcador) map.removeLayer(marcador);
+  marcador = L.marker(ll || map.getCenter(), { draggable: true }).addTo(map);
+  if (ll) map.flyTo(ll, 17);
+  $("barraTxt").textContent = (ll ? "Verifica la ubicación de " : "No encontré la dirección. Haz clic en el mapa para ubicar ") + `"${s.nombre}". Puedes arrastrar el marcador.`;
+  $("barra").hidden = false;
+  estado("Colocando: " + s.nombre);
+}
+map.on("click", e => pend && marcador && marcador.setLatLng(e.latlng));
+
+function terminarColocar() {
+  if (marcador) map.removeLayer(marcador);
+  marcador = pend = null; $("barra").hidden = true;
+}
+$("bCancelar").onclick = terminarColocar;
+$("bPublicar").onclick = async () => {
+  if (!pend || !marcador) return;
+  const p = marcador.getLatLng(), s = pend;
+  try {
+    const dato = { nombre: s.nombre, descripcion: s.descripcion, direccion: s.direccion, lat: p.lat, lon: p.lng,
+                   aprobadoPor: user.uid, sugerenciaId: s.id, creado: serverTimestamp() };
+    const ref = await addDoc(collection(db, "lugares"), dato);
+    await updateDoc(doc(db, "sugerencias", s.id), { estado: "aprobada" });
+    lugares.push({ id: ref.id, ...dato });
+    pintarLugares(); terminarColocar(); cargarPendientes(); estado("Lugar publicado en el mapa.");
+  } catch (e) { alert("No se pudo publicar: " + e.code); }
+};
+
+onAuthStateChanged(auth, async u => {
+  user = u; esAdmin = false;
+  if (u) try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch {}
+  $("btnSug").hidden = !esAdmin;
+  pintarLugares();
+  cargarPendientes();
+});
+
+cargar();
+cargarLugares();
+</script>
+</body>
+</html>
