@@ -75,7 +75,7 @@ dialog textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);borde
 <script src="nav.js"></script>
 <script type="module">
 import { auth, db, onAuthStateChanged, obtenerRol } from "./auth.js";
-import { collection, doc, getDoc, setDoc, onSnapshot }
+import { collection, doc, getDocs, setDoc, deleteDoc, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = id => document.getElementById(id);
@@ -114,10 +114,14 @@ onAuthStateChanged(auth, async u => {
   yo = u; esAdmin = false;
   if (u) try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch {}
   $("miPerfil").hidden = !esAdmin;
-  if (esAdmin) try {   // primera vez: crea la tarjeta del administrador
-    const r = doc(db, "equipo", u.uid);
-    if (!(await getDoc(r)).exists()) await setDoc(r, { nombre: u.displayName || u.email, cargo: "Administrador", bio: "", foto: "" });
-  } catch {}
+  if (esAdmin) try {   // sincroniza: una tarjeta por cada administrador (y quita las de quienes ya no lo son)
+    const admins = (await getDocs(collection(db, "usuarios"))).docs.filter(d => d.data().rol === "administrador");
+    const tarjetas = new Set((await getDocs(collection(db, "equipo"))).docs.map(d => d.id));
+    const ids = new Set(admins.map(d => d.id));
+    for (const d of admins) if (!tarjetas.has(d.id))
+      await setDoc(doc(db, "equipo", d.id), { nombre: d.data().nombre || d.data().email || "Administrador", cargo: "Administrador", bio: "", foto: "" });
+    if (admins.length) for (const id of tarjetas) if (!ids.has(id)) await deleteDoc(doc(db, "equipo", id));
+  } catch (e) { console.warn("equipo:", e.code); }
   pintar();
 });
 
