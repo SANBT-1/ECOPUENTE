@@ -28,7 +28,7 @@
   $("menuBtn").onclick = () => document.body.classList.toggle("oculta");
 
   // Sesión (si auth.js no carga, el menú sigue funcionando)
-  import("./auth.js").then(({ auth, db, onAuthStateChanged, obtenerRol, cerrarSesion }) => {
+  import("./auth.js").then(({ auth, onAuthStateChanged, obtenerRol, cerrarSesion }) => {
     $("salir").onclick = cerrarSesion;
     onAuthStateChanged(auth, async user => {
       const nombre = user && (user.displayName || user.email);
@@ -36,7 +36,6 @@
       $("btnSesion").hidden = $("invitado").hidden = !!user;
       $("perfil").hidden = !user;
       $("linkAdmin").hidden = rol !== "administrador";
-      if (rol === "administrador" && !sessionStorage.getItem("eqSync")) sincronizarEquipo(db);
       if ($("saludo")) $("saludo").textContent = user ? `¡Hola, ${nombre}!` : "";
       if (!user) return;
       $("pNombre").textContent = nombre;
@@ -46,17 +45,4 @@
     });
   }).catch(() => {});
 
-  // Cuando un administrador entra a cualquier página, se asegura de que todos los administradores tengan su tarjeta en "Equipo"
-  async function sincronizarEquipo(db) {
-    try {
-      const f = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-      const admins = (await f.getDocs(f.collection(db, "usuarios"))).docs.filter(d => d.data().rol === "administrador");
-      const tarjetas = new Set((await f.getDocs(f.collection(db, "equipo"))).docs.map(d => d.id));
-      const ids = new Set(admins.map(d => d.id));
-      for (const d of admins) if (!tarjetas.has(d.id))
-        await f.setDoc(f.doc(db, "equipo", d.id), { nombre: d.data().nombre || d.data().email || "Administrador", cargo: "Administrador", bio: "", foto: "" });
-      if (admins.length) for (const id of tarjetas) if (!ids.has(id)) await f.deleteDoc(f.doc(db, "equipo", id));
-      sessionStorage.setItem("eqSync", "1");
-    } catch (e) { console.warn("equipo:", e.code); }
-  }
 })();

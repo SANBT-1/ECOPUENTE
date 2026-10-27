@@ -31,7 +31,9 @@
 .tar h3{font-size:24px}
 .cargo{color:var(--hoja);font-weight:700;margin:4px 0 10px}
 .bio{color:var(--gris);font-size:15px}
-.yo{display:inline-block;margin-top:12px;font-size:12px;font-weight:700;color:var(--bosque);background:var(--menta);padding:3px 12px;border-radius:99px}
+.mini{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.mini button{border:0;border-radius:999px;padding:7px 16px;font:700 13px 'DM Sans';cursor:pointer;background:var(--menta);color:var(--bosque)}
+.mini button.q{background:#fdecea;color:#c0392b}
 dialog{border:0;border-radius:28px;padding:28px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 dialog::backdrop{background:rgba(27,46,36,.55)}
 dialog h2{font-size:26px;margin-bottom:6px}
@@ -48,8 +50,8 @@ dialog textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);borde
   <div class="wrap">
     <header class="cab">
       <h1>Nuestro equipo</h1>
-      <p>Las personas que administran EcoPuente y cuidan que la información sea clara y útil.</p>
-      <button class="btn" id="miPerfil" type="button" hidden>Editar mi perfil</button>
+      <p>Las personas que hacen posible EcoPuente.</p>
+      <button class="btn" id="nuevo" type="button" hidden>Añadir perfil</button>
     </header>
     <div id="estado">Cargando perfiles...</div>
     <div class="personas" id="personas"></div>
@@ -57,11 +59,13 @@ dialog textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);borde
 </main>
 
 <dialog id="dlg">
-  <h2>Mi perfil</h2>
+  <h2 id="dTit">Añadir perfil</h2>
+  <label for="fNombre">Nombre</label>
+  <input id="fNombre" maxlength="100" placeholder="Nombre completo">
   <label for="fCargo">Cargo</label>
   <input id="fCargo" maxlength="60" placeholder="Ej. Coordinadora de contenido">
-  <label for="fBio">Sobre mí</label>
-  <textarea id="fBio" rows="4" maxlength="280" placeholder="Cuéntanos en pocas palabras quién eres"></textarea>
+  <label for="fBio">Sobre la persona</label>
+  <textarea id="fBio" rows="4" maxlength="280" placeholder="Unas líneas sobre quién es y qué hace"></textarea>
   <label for="fFoto">Foto de perfil</label>
   <img class="prev" id="prev" alt="Vista previa" hidden>
   <input id="fFoto" type="file" accept="image/*">
@@ -75,27 +79,29 @@ dialog textarea{width:100%;padding:12px 14px;border:1px solid var(--linea);borde
 <script src="nav.js"></script>
 <script type="module">
 import { auth, db, onAuthStateChanged, obtenerRol } from "./auth.js";
-import { collection, doc, getDocs, setDoc, deleteDoc, onSnapshot }
+import { collection, doc, addDoc, setDoc, deleteDoc, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
-let yo = null, esAdmin = false, equipo = [], nuevaFoto = null;
+let esAdmin = false, equipo = [], editId = null, nuevaFoto = null;
 
 function pintar() {
   $("estado").hidden = equipo.length > 0;
-  if (!equipo.length) $("estado").textContent = "Aún no hay perfiles. Aparecerán cuando los administradores inicien sesión.";
+  if (!equipo.length) $("estado").textContent = esAdmin ? "Aún no hay perfiles. Usa «Añadir perfil»." : "Pronto verás aquí al equipo.";
   const orden = [...equipo].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
   $("personas").innerHTML = orden.map((p, i) => {
     const foto = (p.foto || "").startsWith("data:image/") ? `<img src="${esc(p.foto)}" alt="Foto de ${esc(p.nombre)}">` : esc((p.nombre || "?")[0].toUpperCase());
     return `<article class="persona" style="--d:${i * 110}ms"><div class="tar">
       <div class="aro"><div class="foto">${foto}</div></div>
-      <h3>${esc(p.nombre)}</h3><div class="cargo">${esc(p.cargo || "Administrador")}</div>
-      <p class="bio">${esc(p.bio || "")}</p>${yo && p.id === yo.uid ? '<span class="yo">Tú</span>' : ""}</div></article>`;
+      <h3>${esc(p.nombre)}</h3><div class="cargo">${esc(p.cargo)}</div>
+      <p class="bio">${esc(p.bio)}</p>
+      ${esAdmin ? `<div class="mini"><button data-e="${esc(p.id)}" type="button">Editar</button><button class="q" data-q="${esc(p.id)}" type="button">Quitar</button></div>` : ""}
+    </div></article>`;
   }).join("");
 }
 
-// Efecto de inclinación al pasar el cursor
+// Inclinación al pasar el cursor
 $("personas").addEventListener("pointermove", e => {
   const t = e.target.closest(".tar"); if (!t) return;
   const r = t.getBoundingClientRect();
@@ -108,24 +114,16 @@ $("personas").addEventListener("pointerout", e => {
 
 onSnapshot(collection(db, "equipo"),
   s => { equipo = s.docs.map(d => ({ id: d.id, ...d.data() })); pintar(); },
-  e => { $("estado").textContent = "No se pudieron cargar los perfiles (" + e.code + "). Revisa las reglas de Firestore."; });
+  e => { $("estado").hidden = false; $("estado").textContent = "No se pudieron cargar los perfiles (" + e.code + "). Revisa las reglas de Firestore."; });
 
 onAuthStateChanged(auth, async u => {
-  yo = u; esAdmin = false;
+  esAdmin = false;
   if (u) try { esAdmin = (await obtenerRol(u)) === "administrador"; } catch {}
-  $("miPerfil").hidden = !esAdmin;
-  if (esAdmin) try {   // sincroniza: una tarjeta por cada administrador (y quita las de quienes ya no lo son)
-    const admins = (await getDocs(collection(db, "usuarios"))).docs.filter(d => d.data().rol === "administrador");
-    const tarjetas = new Set((await getDocs(collection(db, "equipo"))).docs.map(d => d.id));
-    const ids = new Set(admins.map(d => d.id));
-    for (const d of admins) if (!tarjetas.has(d.id))
-      await setDoc(doc(db, "equipo", d.id), { nombre: d.data().nombre || d.data().email || "Administrador", cargo: "Administrador", bio: "", foto: "" });
-    if (admins.length) for (const id of tarjetas) if (!ids.has(id)) await deleteDoc(doc(db, "equipo", id));
-  } catch (e) { console.warn("equipo:", e.code); }
+  $("nuevo").hidden = !esAdmin;
   pintar();
 });
 
-// Reduce la foto a un cuadrado de 320 px para guardarla en Firestore
+// Foto: se reduce a un cuadrado de 320 px y se guarda dentro del perfil
 const reducir = file => new Promise((ok, no) => {
   const im = new Image();
   im.onload = () => {
@@ -137,12 +135,21 @@ const reducir = file => new Promise((ok, no) => {
   im.onerror = no; im.src = URL.createObjectURL(file);
 });
 
-$("miPerfil").onclick = async () => {
-  const mio = equipo.find(p => p.id === yo.uid) || {};
-  $("fCargo").value = mio.cargo || ""; $("fBio").value = mio.bio || "";
-  nuevaFoto = null; $("fFoto").value = ""; $("msg").textContent = ""; $("msg").className = "";
-  $("prev").hidden = !mio.foto; if (mio.foto) $("prev").src = mio.foto;
+function abrir(p) {
+  editId = p ? p.id : null; nuevaFoto = null;
+  $("dTit").textContent = p ? "Editar perfil" : "Añadir perfil";
+  $("fNombre").value = p?.nombre || ""; $("fCargo").value = p?.cargo || ""; $("fBio").value = p?.bio || "";
+  $("fFoto").value = ""; $("msg").textContent = ""; $("msg").className = "";
+  $("prev").hidden = !p?.foto; if (p?.foto) $("prev").src = p.foto;
   $("dlg").showModal();
+}
+$("nuevo").onclick = () => abrir(null);
+$("personas").onclick = async e => {
+  const b = e.target.closest("button"); if (!b || !esAdmin) return;
+  if (b.dataset.e) abrir(equipo.find(p => p.id === b.dataset.e));
+  if (b.dataset.q && confirm("¿Quitar este perfil del equipo?")) {
+    try { await deleteDoc(doc(db, "equipo", b.dataset.q)); } catch (x) { alert("No se pudo quitar: " + x.code); }
+  }
 };
 $("fFoto").onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
@@ -152,12 +159,14 @@ $("fFoto").onchange = async e => {
 $("cancelar").onclick = () => $("dlg").close();
 $("guardar").onclick = async () => {
   if (!esAdmin) return;
-  const mio = equipo.find(p => p.id === yo.uid) || {};
-  const dato = { nombre: mio.nombre || yo.displayName || yo.email, cargo: $("fCargo").value.trim() || "Administrador", bio: $("fBio").value.trim(), foto: nuevaFoto ?? mio.foto ?? "" };
+  const nombre = $("fNombre").value.trim();
+  if (!nombre) { $("msg").className = ""; $("msg").textContent = "Escribe el nombre."; return; }
+  const actual = equipo.find(p => p.id === editId) || {};
+  const dato = { nombre, cargo: $("fCargo").value.trim(), bio: $("fBio").value.trim(), foto: nuevaFoto ?? actual.foto ?? "" };
   try {
-    await setDoc(doc(db, "equipo", yo.uid), dato, { merge: true });
-    $("msg").className = "ok"; $("msg").textContent = "Perfil guardado.";
-    setTimeout(() => $("dlg").close(), 700);
+    editId ? await setDoc(doc(db, "equipo", editId), dato) : await addDoc(collection(db, "equipo"), dato);
+    $("msg").className = "ok"; $("msg").textContent = "Guardado.";
+    setTimeout(() => $("dlg").close(), 600);
   } catch (e) { $("msg").className = ""; $("msg").textContent = "No se pudo guardar (" + e.code + ")."; }
 };
 </script>
