@@ -224,7 +224,7 @@ async function buscarLugar() {
   } catch { estado("No se pudo buscar el lugar."); }
 }
 $("mpGo").onclick = buscarLugar;
-$("mpQ").onkeydown = e => e.key === "Enter" && buscarLugar();
+$("mpQ").onkeydown = e => { if (e.key === "Enter") buscarLugar(); };
 $("mpLoc").onclick = () => {
   if (!navigator.geolocation) return estado("Tu navegador no permite ubicación.");
   estado("Obteniendo tu ubicación...");
